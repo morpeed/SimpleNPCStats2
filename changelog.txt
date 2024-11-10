@@ -1,0 +1,4 @@
+2.0.1
+
+Fixes
+- Fixed NPCs spawning inside blocks when scaled

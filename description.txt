@@ -1,0 +1,31 @@
+Adds a simple configuration mod that allows you to modify the stats and apply modifiers to NPCs (including modded) of your choosing.
+
+Includes modifying:
+[list]
+[*] Health
+[*] Damage dealt
+[*] Defense
+[*] Size 
+[*] Movement Speed
+[*] AI Speed
+[*] Gravity
+[*] Life regen / damage over time
+[/list]
+
+[h1]IMPORTANT![/h1]
+Changes to config only take affect on newly spawned NPCs (or upon world reload).
+
+Extreme values can cause issues, so be cautious.
+
+This mod tries its best to override values but isn't perfect. Expect there to be bugs especially with other mods.
+There is little I can do without manually patching NPCs in every mod.
+
+[h1]F.A.Q.[/h1]
+[h3]How to use?[/h3]
+While in your world goto:
+Settings > Mod Configuration > Simple NPC Customizer > Config
+
+[h3]Does this mod work in multiplayer?[/h3]
+It should!
+
+If there are any bugs, crashes, or any features you'd like to recommend. Please go ahead :)

@@ -1,0 +1,168 @@
+Mods: {
+	SimpleNPCStats2: {
+		BrowserSearchDefault: Type to search...
+		BrowserSearchHover: Search for an NPC's name or the mod they're from
+		BrowserButtons: Click to {0} all filtered NPCs
+		BrowserButtonsToggle: toggle
+		BrowserButtonsDisable: disable
+		BrowserButtonsEnable: enable
+		BrowserButtonsToggleFilter:
+			'''
+			Click to cycle through filter modes
+			Currently showing {0} NPCs
+			'''
+		BrowserButtonsToggleFilter_None: all
+		BrowserButtonsToggleFilter_Active: all enabled
+		BrowserButtonsToggleFilter_Inactive: all disabled
+		BrowserButtonsToggleFilter_Hostile: all hostile
+		BrowserButtonsToggleFilter_Friendly: all friendly
+		BrowserButtonsToggleFilter_Boss: all boss
+		BrowserNameDefault: Set name...
+		BrowserNameHover: Set a name for this NPC group
+		BrowserBack: Back
+		GroupsMain: Manage NPCs
+		GroupsNew: New
+		GroupsCreateNew: Create new NPC group
+		GroupsGroupDefault: NPC Group #{0}
+		GroupsEdit: Edit this NPC Group
+		GroupsDelete: Delete this NPC Group
+		GroupsDuplicate: Duplicate this NPC Group
+		GroupsMoveUp:
+			'''
+			Move this NPC group up
+			Increases the groups' priority
+			'''
+		GroupsMoveDown:
+			'''
+			Move this NPC group down
+			Decreases the groups' priority
+			'''
+		GroupsTutorial:
+			'''
+			Welcome to Simple NPC Customizer!!!
+
+			This mod attempts to add an easy way to customize the stats of any NPC.
+
+			You can create a new NPC group by clicking the "New" button to the right, from there
+			you will be able to select the NPCs you'd like, then choose the desired modifiers to affect those NPCs.
+			NPC modifiers will only take affect on newly spawned NPCs.
+			If an NPC is featured in multiple groups, it will take the stats from the top-most group it is within.
+
+			[c/FF0000:Please be warned that this mod is not glitch or crash proof. There are potential conflicts with other]
+			[c/FF0000:mods or bugs in general that may cause issues. This mod tries its best to function correctly, but there]
+			[c/FF0000:can be things out of its control.]
+			'''
+		StatBase: Base (+)
+		StatMult: Multiplicative (*)
+		StatFlat: Flat (+)
+		StatOverride: Override (=)
+		StatReset: Reset value to default
+		StatResetAll: Reset all values to default
+		StatHealth: "[i:29] Health [i:29]"
+		StatDamage: "[i:3507] Damage [i:3507]"
+		StatDefense: "[i:156] Defense [i:156]"
+		StatSize: "[i:5] Size [i:5]"
+		StatMovement: "[i:54] Movement Speed [i:54]"
+		StatAISpeed: "[i:1344] AI Speed [i:1344]"
+		StatGravity: "[i:1131] Gravity [i:1131]"
+		StatRegen: "[i:49] Life Regeneration [i:49]"
+		StatTitle: Stat modifications
+		StatTutorial:
+			'''
+			Here you can apply modifications to NPCs spawned within the filter
+
+			The formula for a stats modification goes as follows:
+			Result = (Base + VALUE) * multiplier + flat OR = override if non-zero
+
+			This mod tries its best to override stat modifications made by other mods, but it's possible for there to be conflicts such as glitches and crashing. Be warned!
+			'''
+
+		Configs: {
+			ConfigSystem: {
+				DisplayName: Config
+
+				data: {
+					Label: data
+					Tooltip: ""
+				}
+			}
+
+			ConfigData: {
+				Tooltip: ""
+
+				NPCGroups: {
+					Label: N P C Groups
+					Tooltip: ""
+				}
+			}
+
+			NPCGroup: {
+				Tooltip: ""
+
+				stats: {
+					Label: stats
+					Tooltip: ""
+				}
+
+				name: {
+					Label: name
+					Tooltip: ""
+				}
+
+				NPCs: {
+					Label: N P Cs
+					Tooltip: ""
+				}
+
+				ModNPCs: {
+					Label: Mod N P Cs
+					Tooltip: ""
+				}
+			}
+
+			StatSet: {
+				Tooltip: ""
+
+				life: {
+					Label: life
+					Tooltip: ""
+				}
+
+				damage: {
+					Label: damage
+					Tooltip: ""
+				}
+
+				defense: {
+					Label: defense
+					Tooltip: ""
+				}
+
+				scale: {
+					Label: scale
+					Tooltip: ""
+				}
+
+				movement: {
+					Label: movement
+					Tooltip: ""
+				}
+
+				aiSpeed: {
+					Label: ai Speed
+					Tooltip: ""
+				}
+
+				gravity: {
+					Label: gravity
+					Tooltip: ""
+				}
+
+				regen: {
+					Label: regen
+					Tooltip: ""
+				}
+			}
+		}
+	}
+}

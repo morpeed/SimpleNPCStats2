@@ -1,0 +1,3 @@
+displayName = (V2 BETA) Simple NPC Customizer (Stats, Size, Speed & More!)
+author = morpe
+version = 2.0.1
