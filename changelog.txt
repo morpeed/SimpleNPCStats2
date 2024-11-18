@@ -1,4 +1,9 @@
-2.0.1
+2.1.0
+
+Features
+- NPC value overrides have been redone to be more similar to old version, where they only take place on spawn, however it should now take higher priority over other mods. This will prevent buggy messes.
 
 Fixes
-- Fixed NPCs spawning inside blocks when scaled
+- Manual fixes for certain vanilla NPCs in vanilla context (If other mods override AI, it'll probably break, there isn't really a solution besides me manually patching the mod which can be very tedious)
+(If you're that nerdy and want to know, King Slime, Firefly, Snail, Detonating Bubble, Mini Star Cell, Ancient Doom, Queen Slime will properly scale)
+- Fixed immune time not working correctly when adjusting AI Speed

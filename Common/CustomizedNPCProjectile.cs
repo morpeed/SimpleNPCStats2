@@ -18,22 +18,27 @@ namespace SimpleNPCStats2.Common
     {
         public override bool InstancePerEntity => true;
 
-        public override void Load()
-        {
-            On_Projectile.Update += On_Projectile_Update;
-            IL_Projectile.Update += IL_Projectile_Update;
-            IL_Projectile.UpdatePosition += IL_Projectile_UpdatePosition;
-        }
+        public float Scale { get; private set; }
+        public float MovementSpeed { get; private set; }
+        public float AISpeed { get; private set; }
+        public float AISpeedCounter { get; private set; }
+        private bool _AISpeedImmediateUpdate;
 
-        public float Scale { get; private set; } = 1;
-        public float MovementSpeed { get; private set; } = 1;
-        public float AISpeed { get; private set; } = 1;
-        public float AISpeedCounter { get; private set; } = 0;
-
-        private static void On_Projectile_Update(On_Projectile.orig_Update orig, Projectile self, int i)
+        public static void On_Projectile_Update(On_Projectile.orig_Update orig, Projectile self, int i)
         {
             if (self.active && self.TryGetGlobalProjectile<CustomizedNPCProjectile>(out var result) && result.Enabled)
             {
+                if (result._AISpeedImmediateUpdate)
+                {
+                    orig(self, i);
+                    result._AISpeedImmediateUpdate = false;
+                }
+
+                if (result.AISpeed <= 0)
+                {
+                    return;
+                }
+
                 result.AISpeedCounter += result.AISpeed;
                 while (result.AISpeedCounter >= 1)
                 {
@@ -49,96 +54,7 @@ namespace SimpleNPCStats2.Common
 
         public bool Enabled { get; private set; }
 
-        private TempStats? tempStats;
-        public struct TempStats
-        {
-            public float scale;
-            public int width;
-            public int height;
-            public Vector2 positionShift;
-
-            public readonly void UpdateProjectile(Projectile projectile)
-            {
-                projectile.scale = scale;
-                projectile.width = width;
-                projectile.height = height;
-            }
-
-            public static TempStats Create(Projectile projectile)
-            {
-                var stats = new TempStats()
-                {
-                    scale = projectile.scale,
-                    width = projectile.width,
-                    height = projectile.height,
-                };
-                return stats;
-            }
-        }
-        private static void IL_Projectile_Update(ILContext context)
-        {
-            try
-            {
-                ILCursor cursor;
-
-                cursor = new ILCursor(context);
-                if (cursor.TryGotoNext(MoveType.Before,
-                    i => i.MatchCall<Projectile>("AI")
-                    ))
-                {
-                    cursor.EmitLdarga(0);
-                    cursor.EmitDelegate((ref Projectile projectile) =>
-                    {
-                        if (projectile.TryGetGlobalProjectile<CustomizedNPCProjectile>(out var result))
-                        {
-                            if (result.Enabled)
-                            {
-                                if (result.tempStats != null)
-                                {
-                                    result.tempStats.Value.UpdateProjectile(projectile);
-                                    projectile.position += result.tempStats.Value.positionShift;
-                                }
-                            }
-                        }
-                    });
-                }
-
-                if (cursor.TryGotoNext(MoveType.After,
-                    i => i.MatchCall<Projectile>("AI")
-                    ))
-                {
-                    cursor.EmitLdarga(0);
-                    cursor.EmitDelegate((ref Projectile projectile) =>
-                    {
-                        if (projectile.TryGetGlobalProjectile<CustomizedNPCProjectile>(out var result))
-                        {
-                            if (result.Enabled)
-                            {
-                                var tempStats = TempStats.Create(projectile);
-
-                                var oldWidth = projectile.width;
-                                var oldHeight = projectile.height;
-
-                                projectile.scale *= result.Scale;
-                                projectile.width = Math.Max((int)(projectile.width * result.Scale), 1);
-                                projectile.height = Math.Max((int)(projectile.height * result.Scale), 1);
-
-                                tempStats.positionShift = new Vector2((projectile.width - oldWidth) / 2f, (projectile.height - oldHeight) / 2f);
-                                projectile.position -= tempStats.positionShift;
-
-                                result.tempStats = tempStats;
-                            }
-                        }
-                    });
-                }
-            }
-            catch (Exception)
-            {
-                MonoModHooks.DumpIL(ModContent.GetInstance<SimpleNPCStats2>(), context);
-            }
-        }
-
-        private static void IL_Projectile_UpdatePosition(ILContext context)
+        public static void IL_Projectile_UpdatePosition(ILContext context)
         {
             try
             {
@@ -207,6 +123,12 @@ namespace SimpleNPCStats2.Common
                     Scale = result.Scale;
                     MovementSpeed = result.MovementSpeed;
                     AISpeed = result.AISpeed;
+                    _AISpeedImmediateUpdate = true;
+                    AISpeedCounter = -1;
+
+                    projectile.scale *= Scale;
+                    projectile.width = Math.Max(1, (int)(projectile.width * Scale));
+                    projectile.height = Math.Max(1, (int)(projectile.height * Scale));
                 }
             }
         }

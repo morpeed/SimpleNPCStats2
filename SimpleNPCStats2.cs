@@ -6,6 +6,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Collections.Generic;
 using tModPorter;
 using System.Reflection;
+using SimpleNPCStats2.Common;
 
 namespace SimpleNPCStats2
 {
