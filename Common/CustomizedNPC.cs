@@ -288,7 +288,8 @@ namespace SimpleNPCStats2.Common
                     {
                         if (_lifeRegenModified)
                         {
-                            npc.HealEffect(regenNumber);
+                            int visualNumber = Math.Min(npc.lifeMax - npc.life, regenNumber);
+                            npc.HealEffect(visualNumber);
                             return regenNumber;
                         }
                         return 1;
@@ -559,6 +560,16 @@ namespace SimpleNPCStats2.Common
                 }
             }
             return true;
+        }
+
+        public override void ModifyGlobalLoot(GlobalLoot globalLoot)
+        {
+
+        }
+
+        public override void EditSpawnPool(IDictionary<int, float> pool, NPCSpawnInfo spawnInfo)
+        {
+            
         }
 
         public override void ModifyHoverBoundingBox(NPC npc, ref Rectangle boundingBox)

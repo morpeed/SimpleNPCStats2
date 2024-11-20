@@ -11,12 +11,18 @@ using Microsoft.Xna.Framework;
 using Terraria.DataStructures;
 using SimpleNPCStats2.Common.Config;
 using Newtonsoft.Json.Linq;
+using Terraria.GameContent.Creative;
+using Terraria.WorldBuilding;
+using Terraria.ID;
 
 namespace SimpleNPCStats2.Common
 {
     public class CustomizedNPCProjectile : GlobalProjectile
     {
         public override bool InstancePerEntity => true;
+
+        public bool Enabled => Stats != null;
+        public ConfigData.NPCGroup.StatSet Stats { get; private set; }
 
         public float Scale { get; private set; }
         public float MovementSpeed { get; private set; }
@@ -51,8 +57,6 @@ namespace SimpleNPCStats2.Common
                 orig(self, i);
             }
         }
-
-        public bool Enabled { get; private set; }
 
         public static void IL_Projectile_UpdatePosition(ILContext context)
         {
@@ -119,7 +123,7 @@ namespace SimpleNPCStats2.Common
             {
                 if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result) && result.Enabled)
                 {
-                    Enabled = true;
+                    Stats = result.Stats;
                     Scale = result.Scale;
                     MovementSpeed = result.MovementSpeed;
                     AISpeed = result.AISpeed;
@@ -129,6 +133,9 @@ namespace SimpleNPCStats2.Common
                     projectile.scale *= Scale;
                     projectile.width = Math.Max(1, (int)(projectile.width * Scale));
                     projectile.height = Math.Max(1, (int)(projectile.height * Scale));
+
+                    float ogNPCDamage = ContentSamples.NpcsByNetId[result.TypeNetId].damage;
+                    projectile.damage = (int)Math.Max(0, projectile.damage * (npc.damage / ogNPCDamage));
                 }
             }
         }

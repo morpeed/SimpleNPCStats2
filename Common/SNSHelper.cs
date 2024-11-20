@@ -221,5 +221,35 @@ namespace SimpleNPCStats2.Common
                 }
             }
         }
+
+        public static T Min<T>(params T[] values) where T : IComparable
+        {
+            T lowest = values[0];
+
+            for (int i = 1; i < values.Length; i++)
+            {
+                if (values[i].CompareTo(lowest) < 0)
+                {
+                    lowest = values[i];
+                }
+            }
+
+            return lowest;
+        }
+
+        public static T Max<T>(params T[] values) where T : IComparable
+        {
+            T highest = values[0];
+
+            for (int i = 1; i < values.Length; i++)
+            {
+                if (values[i].CompareTo(highest) > 0)
+                {
+                    highest = values[i];
+                }
+            }
+
+            return highest;
+        }
     }
 }

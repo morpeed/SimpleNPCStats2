@@ -168,6 +168,9 @@ namespace SimpleNPCStats2.Common.Config
                     public T flatValue;
                     public T overrideValue;
 
+                    [JsonIgnore]
+                    public readonly bool UsesOverride => Convert.ToSingle(overrideValue) != 0;
+
                     public Data() { }
 
                     public Data(T baseValue, float multValue, T flatValue, T overrideValue)

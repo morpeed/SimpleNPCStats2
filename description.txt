@@ -29,3 +29,6 @@ Settings > Mod Configuration > Simple NPC Customizer > Config
 It should!
 
 If there are any bugs, crashes, or any features you'd like to recommend. Please go ahead :)
+
+GitHub:
+https://github.com/morpeed/SimpleNPCStats2
