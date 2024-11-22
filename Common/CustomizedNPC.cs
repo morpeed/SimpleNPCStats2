@@ -17,6 +17,7 @@ using Terraria.GameInput;
 using Terraria.GameContent;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria.Utilities;
+using Terraria.UI.Chat;
 
 namespace SimpleNPCStats2.Common
 {
@@ -114,6 +115,7 @@ namespace SimpleNPCStats2.Common
         public static void On_NPC_SetDefaults(On_NPC.orig_SetDefaults orig, NPC self, int Type, NPCSpawnParams spawnparams)
         {
             orig(self, Type, spawnparams);
+
             // Method returns early if Type < 0
             if (!Main.gameMenu && Type > 0)
             {
@@ -149,6 +151,8 @@ namespace SimpleNPCStats2.Common
                 //DebugNPC();
                 Stats = dataValue;
 
+                OldStatInfo = StatInfo.Create(npc);
+
                 Gravity = Stats.gravity.GetValue(1);
                 AISpeed = Stats.aiSpeed.GetValue(1);
                 AISpeedCounter = -1;
@@ -181,6 +185,8 @@ namespace SimpleNPCStats2.Common
                 Scale = npc.scale / oldScale;
                 npc.width = Math.Max(1, (int)(npc.width * Scale));
                 npc.height = Math.Max(1, (int)(npc.height * Scale));
+
+                NewStatInfo = StatInfo.Create(npc);
 
                 //DebugNPC();
                 return true;
@@ -544,8 +550,44 @@ namespace SimpleNPCStats2.Common
             {
                 MonoModHooks.DumpIL(ModContent.GetInstance<SimpleNPCStats2>(), il);
             }
-        } 
+        }
         #endregion
+
+        /*
+        public static void IL_NPC_NewNPC(ILContext context)
+        {
+            try
+            {
+                ILCursor cursor;
+
+                cursor = new ILCursor(context);
+                if (cursor.TryGotoNext(MoveType.After,
+                    i => i.MatchCall("Terraria.ModLoader.NPCLoader", "OnSpawn")
+                    ))
+                {
+                    cursor.EmitLdloc0();
+                    cursor.EmitDelegate((int npcWhoAmI) =>
+                    {
+                        var npc = Main.npc[npcWhoAmI];
+                        if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result))
+                        {
+                            if (result.Enabled)
+                            {
+                                result.NewStatInfo = StatInfo.Create(npc);
+                                Main.NewText(result.OldStatInfo);
+                                Main.NewText(result.NewStatInfo);
+                                Main.NewText(result.NewStatInfo.damage / (float)result.OldStatInfo.damage);
+                            }
+                        }
+                    });
+                }
+            }
+            catch (Exception)
+            {
+                MonoModHooks.DumpIL(ModContent.GetInstance<SimpleNPCStats2>(), context);
+            }
+        }
+        */
 
         public override bool PreAI(NPC npc)
         {
@@ -560,6 +602,11 @@ namespace SimpleNPCStats2.Common
                 }
             }
             return true;
+        }
+
+        public override void PostAI(NPC npc)
+        {
+
         }
 
         public override void ModifyGlobalLoot(GlobalLoot globalLoot)
@@ -595,6 +642,48 @@ namespace SimpleNPCStats2.Common
             return 1f;
         }
 
+        public StatInfo OldStatInfo { get; private set; }
+        public StatInfo NewStatInfo { get; private set; }
+        public struct StatInfo
+        {
+            public int defDamage;
+            public int life;
+
+            public static StatInfo Create(NPC npc)
+            {
+                return new StatInfo()
+                {
+                    defDamage = npc.defDamage,
+                    life = npc.lifeMax
+                };
+            }
+
+            public override string ToString()
+            {
+                return string.Join(',', defDamage, life);
+            }
+        }
+
+
+        public override void PostDraw(NPC npc, SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
+        {
+            return;
+
+            object[] draw = [
+                OldStatInfo,
+                NewStatInfo,
+                npc.damage,
+                NewStatInfo.defDamage / (float)OldStatInfo.defDamage
+                ];
+
+            for (int i = 0; i < draw.Length; i++)
+            {
+                string text = draw[i].ToString();
+                float yOff = i * 20;
+
+                Utils.DrawBorderString(spriteBatch, text, npc.Center + new Vector2(0, npc.height / 2 + 50 + yOff) - Main.screenPosition, Color.White, 1, 0.5f, 0.5f);
+            }
+        }
         /*
          
         public TempStats? tempStats;

@@ -16,6 +16,7 @@ using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria.ModLoader.Config.UI;
+using Terraria.ModLoader.UI;
 using Terraria.ModLoader.UI.Elements;
 using Terraria.UI;
 using static SimpleNPCStats2.Common.Config.ConfigData.NPCGroup.StatSet;
@@ -288,17 +289,13 @@ namespace SimpleNPCStats2.Common.Config.UI.NPCUI
             grid_Panel.hoverStatus = UIHoverStatus.NoHover;
             panel.Append(grid_Panel);
 
-            var grid = new UIGrid();
+            var grid = new UIGridWithScrollSpeed();
             grid.SetSize(0, 0, 1f, 1f);
+            grid.scrollSpeed = 0.2f;
             grid.ListPadding = 0;
             grid.SetScrollbar(scrollBar);
             grid_Panel.Append(grid);
             grid.AddRange(elements);
-        }
-
-        public override void SafeUpdate(GameTime gametime)
-        {
-            
         }
     }
 }

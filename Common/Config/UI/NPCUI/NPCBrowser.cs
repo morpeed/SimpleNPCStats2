@@ -42,7 +42,7 @@ namespace SimpleNPCStats2.Common.Config.UI.NPCUI
         /// <summary>
         /// The grid of NPCs that shows all NPCs that have been filtered.
         /// </summary>
-        public UIGrid npcGrid;
+        public UIGridWithScrollSpeed npcGrid;
 
         /// <summary>
         /// The mode of filtering NPCs.
@@ -136,6 +136,7 @@ namespace SimpleNPCStats2.Common.Config.UI.NPCUI
 
             // NPC grid initialisation
             npcGrid = new();
+            npcGrid.scrollSpeed = 0.2f;
             npcGrid.SetSize(-20, 0, 1, 1);
             npcGrid.ListPadding = 2f;
             grid_Panel.Append(npcGrid);

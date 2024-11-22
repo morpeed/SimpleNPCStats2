@@ -134,8 +134,7 @@ namespace SimpleNPCStats2.Common
                     projectile.width = Math.Max(1, (int)(projectile.width * Scale));
                     projectile.height = Math.Max(1, (int)(projectile.height * Scale));
 
-                    float ogNPCDamage = ContentSamples.NpcsByNetId[result.TypeNetId].damage;
-                    projectile.damage = (int)Math.Max(0, projectile.damage * (npc.damage / ogNPCDamage));
+                    projectile.damage = Math.Max(1, (int)(projectile.damage * ((float)result.NewStatInfo.defDamage / result.OldStatInfo.defDamage)));
                 }
             }
         }

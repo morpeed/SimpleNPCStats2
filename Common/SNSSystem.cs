@@ -26,10 +26,11 @@ namespace SimpleNPCStats2.Common
 
         public override void Load()
         {
-            IL_NPC.AI_006_Worms += IL_NPC_AI_006_Worms;
-            //IL_NPC.VanillaAI_Inner += IL_NPC_VanillaAI_Inner; // Too big, don't work, go see NPCOverrides
             IL_NPC.UpdateNPC_Inner += CustomizedNPC.IL_NPC_Movement;
             IL_NPC.UpdateNPC_BuffApplyDOTs += CustomizedNPC.IL_NPC_LifeRegen;
+            //IL_NPC.NewNPC += CustomizedNPC.IL_NPC_NewNPC;
+            IL_NPC.AI_006_Worms += IL_NPC_AI_006_Worms;
+            //IL_NPC.VanillaAI_Inner += IL_NPC_VanillaAI_Inner; // Too big, don't work, go see NPCOverrides
             IL_NPC.AI_121_QueenSlime += IL_NPC_AI_121_QueenSlime;
 
             IL_Projectile.UpdatePosition += CustomizedNPCProjectile.IL_Projectile_UpdatePosition;

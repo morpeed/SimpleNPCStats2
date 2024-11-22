@@ -1,5 +1,7 @@
-2.1.1
+2.1.2
 
 Features
-- Projectile damage will now be be relative to its NPC's damage
-- Positive life regen will now clamp its visual number when healing to full health
+- Decreased speed of scroll wheel in menus
+
+Fixes
+- Projectile damage *should* now properly try to be relative to its NPC's damage
