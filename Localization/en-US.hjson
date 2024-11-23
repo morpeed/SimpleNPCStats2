@@ -66,6 +66,7 @@ Mods: {
 		StatAISpeed: "[i:1344] AI Speed [i:1344]"
 		StatGravity: "[i:1131] Gravity [i:1131]"
 		StatRegen: "[i:49] Life Regeneration [i:49]"
+		StatKnockback: "[i:3258] Knockback Resist [i:3258]"
 		StatTitle: Stat modifications
 		StatTutorial:
 			'''
@@ -162,7 +163,105 @@ Mods: {
 					Label: regen
 					Tooltip: ""
 				}
+
+				knockback: {
+					Label: knockback
+					Tooltip: ""
+				}
 			}
+		}
+	}
+}
+
+Configs: {
+	ConfigSystem: {
+		DisplayName: Config System
+
+		data: {
+			Label: data
+			Tooltip: ""
+		}
+	}
+
+	ConfigData: {
+		Tooltip: ""
+
+		NPCGroups: {
+			Label: N P C Groups
+			Tooltip: ""
+		}
+	}
+
+	NPCGroup: {
+		Tooltip: ""
+
+		stats: {
+			Label: stats
+			Tooltip: ""
+		}
+
+		name: {
+			Label: name
+			Tooltip: ""
+		}
+
+		NPCs: {
+			Label: N P Cs
+			Tooltip: ""
+		}
+
+		ModNPCs: {
+			Label: Mod N P Cs
+			Tooltip: ""
+		}
+	}
+
+	StatSet: {
+		Tooltip: ""
+
+		life: {
+			Label: life
+			Tooltip: ""
+		}
+
+		damage: {
+			Label: damage
+			Tooltip: ""
+		}
+
+		defense: {
+			Label: defense
+			Tooltip: ""
+		}
+
+		scale: {
+			Label: scale
+			Tooltip: ""
+		}
+
+		movement: {
+			Label: movement
+			Tooltip: ""
+		}
+
+		aiSpeed: {
+			Label: ai Speed
+			Tooltip: ""
+		}
+
+		gravity: {
+			Label: gravity
+			Tooltip: ""
+		}
+
+		regen: {
+			Label: regen
+			Tooltip: ""
+		}
+
+		knockback: {
+			Label: knockback
+			Tooltip: ""
 		}
 	}
 }

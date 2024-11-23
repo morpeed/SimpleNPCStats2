@@ -1,7 +1,7 @@
-2.1.2
+2.1.3
 
 Features
-- Decreased speed of scroll wheel in menus
-
-Fixes
-- Projectile damage *should* now properly try to be relative to its NPC's damage
+- Added knockback resist modifier
+- NPCs with Zombie or Demon Eye AI will no longer be frozen when scaled up too big (will not work if another mod overrides these AIs)
+- Max npc group count 20 > 999
+- Made customization menu slightly more compact

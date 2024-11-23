@@ -31,7 +31,7 @@ namespace SimpleNPCStats2.Common.Config.UI.NPCUI
             muted = true;
         }
 
-        public const int MAX_GROUPS = 20;
+        public const int MAX_GROUPS = 999;
 
         public override void SafeOnInitialize()
         {

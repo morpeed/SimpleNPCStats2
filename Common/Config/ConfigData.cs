@@ -208,6 +208,7 @@ namespace SimpleNPCStats2.Common.Config
                 public Data<float> aiSpeed;
                 public Data<float> gravity;
                 public Data<int> regen;
+                public Data<float> knockback;
 
                 public StatSet()
                 {
@@ -219,6 +220,7 @@ namespace SimpleNPCStats2.Common.Config
                     aiSpeed = new();
                     gravity = new();
                     regen = new();
+                    knockback = new();
                 }
 
                 public StatSet Clone()
@@ -232,7 +234,8 @@ namespace SimpleNPCStats2.Common.Config
                         movement = movement,
                         aiSpeed = aiSpeed,
                         gravity = gravity,
-                        regen = regen
+                        regen = regen,
+                        knockback = knockback
                     };
                 }
             }

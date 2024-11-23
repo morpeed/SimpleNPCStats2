@@ -189,6 +189,12 @@ namespace SimpleNPCStats2.Common.Config.UI.NPCUI
                     CreateStatElement(data.regen.flatValue, (value) => data.regen.flatValue = value, flatText, new UIIntSlider(0, -100, 100, 1), new UIIntField()),
                     CreateStatElement(data.regen.overrideValue, (value) => data.regen.overrideValue = value, overrideText, new UIIntSlider(min:-100, max:100, rounding:1), new UIIntField())),
 
+                CreateStatPanel(Language.GetTextValue(SNSHelper.LocalizationDirectory + "StatKnockback"),
+                    CreateStatElement(data.knockback.baseValue, (value) => data.knockback.baseValue = value, baseText, new UIFloatSlider(0, 0, 4, 0.1f), new UIFloatField(min: 0, max: 10000)),
+                    CreateStatElement(data.knockback.multValue, (value) => data.knockback.multValue = value, multText, new UIFloatSlider(1, 0, 10, 0.2f), new UIFloatField(1, min: 0, max: 1000)),
+                    CreateStatElement(data.knockback.flatValue, (value) => data.knockback.flatValue = value, flatText, new UIFloatSlider(0, 0, 4, 0.1f), new UIFloatField(min: 0, max: 10000)),
+                    CreateStatElement(data.knockback.overrideValue, (value) => data.knockback.overrideValue = value, overrideText, new UIFloatSlider(min:0, max:4, rounding:0.1f), new UIFloatField(min:0, max: 10000))),
+
                 CreateStatPanel(Language.GetTextValue(SNSHelper.LocalizationDirectory + "StatSize"),
                     CreateStatElement(data.scale.multValue, (value) => data.scale.multValue = value, multText, new UIFloatSlider(1, 0.01f, 2, 0.05f), new UIFloatField(1, min: 0.01f, max: 100))),
 
@@ -199,14 +205,13 @@ namespace SimpleNPCStats2.Common.Config.UI.NPCUI
                     CreateStatElement(data.movement.multValue, (value) => data.movement.multValue = value, multText, new UIFloatSlider(1, -2, 2, 0.1f), new UIFloatField(1, min: -100, max: 100))),
 
                 CreateStatPanel(Language.GetTextValue(SNSHelper.LocalizationDirectory + "StatAISpeed"),
-                    CreateStatElement(data.aiSpeed.multValue, (value) => data.aiSpeed.multValue = value, multText, new UIFloatSlider(1, 0, 4, 0.1f), new UIFloatField(1, min: 0, max: 100)))
-
+                    CreateStatElement(data.aiSpeed.multValue, (value) => data.aiSpeed.multValue = value, multText, new UIFloatSlider(1, 0, 4, 0.1f), new UIFloatField(1, min: 0, max: 100))),
             ];
 
-            elements[4].Width.Set(0, 0.5f);
             elements[5].Width.Set(0, 0.5f);
             elements[6].Width.Set(0, 0.5f);
             elements[7].Width.Set(0, 0.5f);
+            elements[8].Width.Set(0, 0.5f);
 
             SetPadding(4);
 

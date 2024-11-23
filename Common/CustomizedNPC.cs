@@ -186,6 +186,8 @@ namespace SimpleNPCStats2.Common
                 npc.width = Math.Max(1, (int)(npc.width * Scale));
                 npc.height = Math.Max(1, (int)(npc.height * Scale));
 
+                npc.knockBackResist = Stats.knockback.GetValue(npc.knockBackResist);
+
                 NewStatInfo = StatInfo.Create(npc);
 
                 //DebugNPC();

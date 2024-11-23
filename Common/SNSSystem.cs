@@ -32,6 +32,8 @@ namespace SimpleNPCStats2.Common
             IL_NPC.AI_006_Worms += IL_NPC_AI_006_Worms;
             //IL_NPC.VanillaAI_Inner += IL_NPC_VanillaAI_Inner; // Too big, don't work, go see NPCOverrides
             IL_NPC.AI_121_QueenSlime += IL_NPC_AI_121_QueenSlime;
+            IL_NPC.AI_002_FloatingEye += IL_NPC_AI_002_FloatingEye;
+            //IL_NPC.AI_003_Fighters += IL_NPC_AI_003_Fighters;// Again, too big, don't work, go see NPCOverrides
 
             IL_Projectile.UpdatePosition += CustomizedNPCProjectile.IL_Projectile_UpdatePosition;
         }
@@ -65,6 +67,127 @@ namespace SimpleNPCStats2.Common
             {
                 npc.scale *= CustomizedNPC.GetScaleMultiplier(npc);
             });
+        }
+
+        private static void IL_NPC_AI_003_Fighters(ILContext context)
+        {
+            try
+            {
+                ILCursor cursor;
+                cursor = new ILCursor(context);
+                if (cursor.TryGotoNext(MoveType.After,
+                     i => i.MatchLdloc(141),
+                     i => i.MatchLdcR4(1),
+                     i => i.MatchLdcR4(1),
+                     i => i.MatchLdarg0(),
+                     i => i.MatchLdfld("Terraria.NPC", "scale"),
+                     i => i.MatchSub(),
+                     i => i.MatchAdd(),
+                     i => i.MatchMul(),
+                     i => i.MatchStloc(141)
+                    ))
+                {
+                    cursor.EmitLdloca(141);
+                    cursor.EmitDelegate((ref float speed) =>
+                    {
+                        speed = Math.Max(0.75f, speed);
+                    });
+                }
+
+                if (cursor.TryGotoNext(MoveType.After,
+                     i => i.MatchLdloc(142),
+                     i => i.MatchLdcR4(1),
+                     i => i.MatchLdcR4(1),
+                     i => i.MatchLdarg0(),
+                     i => i.MatchLdfld("Terraria.NPC", "scale"),
+                     i => i.MatchSub(),
+                     i => i.MatchAdd(),
+                     i => i.MatchMul(),
+                     i => i.MatchStloc(142)
+                    ))
+                {
+                    cursor.EmitLdloca(142);
+                    cursor.EmitDelegate((ref float speed) =>
+                    {
+                        speed = Math.Max(0.75f, speed);
+                    });
+                }
+
+                if (cursor.TryGotoNext(MoveType.After,
+                     i => i.MatchLdloc(163),
+                     i => i.MatchLdcR4(1),
+                     i => i.MatchLdcR4(1),
+                     i => i.MatchLdarg0(),
+                     i => i.MatchLdfld("Terraria.NPC", "scale"),
+                     i => i.MatchSub(),
+                     i => i.MatchAdd(),
+                     i => i.MatchMul(),
+                     i => i.MatchStloc(163)
+                    ))
+                {
+                    cursor.EmitLdloca(163);
+                    cursor.EmitDelegate((ref float speed) =>
+                    {
+                        speed = Math.Max(0.5f, speed);
+                    });
+                }
+
+                if (cursor.TryGotoNext(MoveType.After,
+                     i => i.MatchLdloc(166),
+                     i => i.MatchLdcR4(1),
+                     i => i.MatchLdcR4(1),
+                     i => i.MatchLdarg0(),
+                     i => i.MatchLdfld("Terraria.NPC", "scale"),
+                     i => i.MatchSub(),
+                     i => i.MatchAdd(),
+                     i => i.MatchMul(),
+                     i => i.MatchStloc(166)
+                    ))
+                {
+                    cursor.EmitLdloca(166);
+                    cursor.EmitDelegate((ref float speed) =>
+                    {
+                        speed = Math.Max(0.5f, speed);
+                    });
+                }
+            }
+            catch
+            {
+                MonoModHooks.DumpIL(ModContent.GetInstance<SimpleNPCStats2>(), context);
+            }
+        }
+
+        private static void IL_NPC_AI_002_FloatingEye(ILContext context)
+        {
+            try
+            {
+                ILCursor cursor;
+                cursor = new ILCursor(context);
+                if (cursor.TryGotoNext(MoveType.After,
+                         i => i.MatchLdloc3(),
+                         i => i.MatchLdcR4(1),
+                         i => i.MatchLdcR4(1),
+                         i => i.MatchLdarg0(),
+                         i => i.MatchLdfld("Terraria.NPC", "scale"),
+                         i => i.MatchSub(),
+                         i => i.MatchAdd(),
+                         i => i.MatchMul(),
+                         i => i.MatchStloc3()
+                        ))
+                {
+                    cursor.EmitLdloca(2);
+                    cursor.EmitLdloca(3);
+                    cursor.EmitDelegate((ref float xSpeed, ref float ySpeed) =>
+                    {
+                        xSpeed = Math.Max(2, xSpeed);
+                        ySpeed = Math.Max(0.75f, ySpeed);
+                    });
+                }
+            }
+            catch
+            {
+                MonoModHooks.DumpIL(ModContent.GetInstance<SimpleNPCStats2>(), context);
+            }
         }
 
         private static void IL_NPC_AI_006_Worms(ILContext context)

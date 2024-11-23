@@ -87,8 +87,8 @@ namespace SimpleNPCStats2.Common.Config.UI.NPCUI
 
             // Panel to go back to previous page
             var back_Panel = new SmartUIPanel();
-            back_Panel.SetSize(0, 40, 1f, 0f);
-            back_Panel.SetPosition(0, -40, 0, 1f);
+            back_Panel.SetSize(0, 35, 1f, 0f);
+            back_Panel.SetPosition(0, -35, 0, 1f);
             back_Panel.leftClickSound = SoundID.MenuClose;
             back_Panel.OnLeftClick += delegate
             {
@@ -104,7 +104,7 @@ namespace SimpleNPCStats2.Common.Config.UI.NPCUI
 
             // Name panel and field
             var name_Panel = new SmartUIPanel();
-            name_Panel.SetSize(0, 40, 1f, 0f);
+            name_Panel.SetSize(0, 35, 1f, 0f);
             name_Panel.SetPadding(0);
             Append(name_Panel);
 
@@ -123,8 +123,8 @@ namespace SimpleNPCStats2.Common.Config.UI.NPCUI
 
             // Panel for everything else
             var lower_Element = new SmartUIElement();
-            lower_Element.SetSize(0, -120, 1f, 1);
-            lower_Element.SetPosition(0, 80, 0, 0);
+            lower_Element.SetSize(0, -105, 1f, 1);
+            lower_Element.SetPosition(0, 70, 0, 0);
             Append(lower_Element);
 
             var grid_Panel = new SmartUIPanel();
@@ -138,7 +138,7 @@ namespace SimpleNPCStats2.Common.Config.UI.NPCUI
             npcGrid = new();
             npcGrid.scrollSpeed = 0.2f;
             npcGrid.SetSize(-20, 0, 1, 1);
-            npcGrid.ListPadding = 2f;
+            npcGrid.ListPadding = 1f;
             grid_Panel.Append(npcGrid);
 
             var scrollbar = new UIScrollbar();
@@ -158,7 +158,7 @@ namespace SimpleNPCStats2.Common.Config.UI.NPCUI
                 }
 
                 var entry = new NPCEntry(i);
-                entry.SetSize(36, 36, 0, 0);
+                entry.SetSize(35, 35, 0, 0);
                 entry.SetPadding(3);
                 entry.OnLeftClick += delegate
                 {
@@ -181,8 +181,8 @@ namespace SimpleNPCStats2.Common.Config.UI.NPCUI
 
             // Filter panel and buttons
             var filter_Panel = new SmartUIPanel();
-            filter_Panel.SetSize(-150, 40, 1, 0);
-            filter_Panel.SetPosition(0, 40, 0, 0);
+            filter_Panel.SetSize(-150, 35, 1, 0);
+            filter_Panel.SetPosition(0, 35, 0, 0);
             filter_Panel.SetPadding(0);
             Append(filter_Panel);
 
@@ -198,8 +198,8 @@ namespace SimpleNPCStats2.Common.Config.UI.NPCUI
             filter_Panel.Append(filter_Field);
 
             var buttons_Panel = new SmartUIPanel();
-            buttons_Panel.SetSize(150, 40, 0, 0);
-            buttons_Panel.SetPosition(0, 40, 0, 0);
+            buttons_Panel.SetSize(150, 35, 0, 0);
+            buttons_Panel.SetPosition(0, 35, 0, 0);
             buttons_Panel.SetPadding(4);
             buttons_Panel.HAlign = 1;
             buttons_Panel.muted = true;
