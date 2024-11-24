@@ -31,13 +31,14 @@ namespace SimpleNPCStats2.Common
         public bool Enabled => Stats != null;
         public ConfigData.NPCGroup.StatSet Stats { get; private set; }
 
-        public float MovementSpeed { get; private set; }
+        public float MovementSpeed { get; private set; } = 1f;
         private bool _doMovementSpeed;
-        public float Gravity { get; private set; }
-        public float Scale { get; private set; }
-        public float AISpeed { get; private set; }
+        public float Gravity { get; private set; } = 1f;
+        public float Scale { get; private set; } = 1f;
+        public float AISpeed { get; private set; } = 1f;
         public float AISpeedCounter { get; private set; }
         private bool _AISpeedImmediateUpdate;
+        public bool OverrideModifyAI { get; private set; }
 
         public int TypeNetId { get; private set; }
 
@@ -150,7 +151,7 @@ namespace SimpleNPCStats2.Common
             {
                 //DebugNPC();
                 Stats = dataValue;
-
+                
                 OldStatInfo = StatInfo.Create(npc);
 
                 Gravity = Stats.gravity.GetValue(1);
@@ -188,9 +189,10 @@ namespace SimpleNPCStats2.Common
 
                 npc.knockBackResist = Stats.knockback.GetValue(npc.knockBackResist);
 
+                OverrideModifyAI = ConfigSystemAdvanced.Instance.overrideModifyAI;
+
                 NewStatInfo = StatInfo.Create(npc);
 
-                //DebugNPC();
                 return true;
             }
             else
@@ -639,7 +641,10 @@ namespace SimpleNPCStats2.Common
         {
             if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result))
             {
-                return result.Scale;
+                if (result.Enabled)
+                {
+                    return result.Scale;
+                }
             }
             return 1f;
         }

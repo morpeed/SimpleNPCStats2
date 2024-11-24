@@ -1,4 +1,11 @@
-2.1.4
+2.1.5
+
+Features
+- Added extra config with some advance settings
 
 Fixes
-- Fixed relative projectile damage bugs involving NPC damage being 0
+- Fixed some non-boss vanilla worms not scaling distance between segments correctly when using scale modifier
+- Fixed some NPCs that have had AI modifications attempting to scale by 0 when unmodified
+
+Misc
+- Adjusted some slider values

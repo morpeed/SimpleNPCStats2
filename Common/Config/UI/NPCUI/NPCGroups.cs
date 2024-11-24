@@ -111,7 +111,7 @@ namespace SimpleNPCStats2.Common.Config.UI.NPCUI
 
         private void LoadData()
         {
-            foreach (var group in ConfigDataElement.instance.Data.NPCGroups)
+            foreach (var group in ConfigDataElement.Instance.Data.NPCGroups)
             {
                 NewNPCGroup(group, false);
             }
@@ -126,13 +126,13 @@ namespace SimpleNPCStats2.Common.Config.UI.NPCUI
 
             entry.Edit.OnLeftClick += delegate
             {
-                ConfigDataElement.instance.SetElement(new NPCBrowser(entry.Data));
+                ConfigDataElement.Instance.SetElement(new NPCBrowser(entry.Data));
             };
             entry.Delete.OnLeftClick += delegate
             {
                 list.Remove(entry);
-                ConfigDataElement.instance.Data.NPCGroups.Remove(entry.Data);
-                ConfigDataElement.instance.Save();
+                ConfigDataElement.Instance.Data.NPCGroups.Remove(entry.Data);
+                ConfigDataElement.Instance.Save();
             };
             entry.Up.OnLeftClick += delegate
             {
@@ -160,16 +160,16 @@ namespace SimpleNPCStats2.Common.Config.UI.NPCUI
                 if (index1 >= 0 && index1 < list.Count && index2 >= 0 && index2 < list.Count && index1 != index2)
                 {
                     (list._items[index1], list._items[index2]) = (list._items[index2], list._items[index1]);
-                    var groups = ConfigDataElement.instance.Data.NPCGroups;
+                    var groups = ConfigDataElement.Instance.Data.NPCGroups;
                     (groups[index1], groups[index2]) = (groups[index2], groups[index1]);
-                    ConfigDataElement.instance.Save();
+                    ConfigDataElement.Instance.Save();
                 }
             }
 
             if (isNewData)
             {
-                ConfigDataElement.instance.Data.NPCGroups.Add(data);
-                ConfigDataElement.instance.Save();
+                ConfigDataElement.Instance.Data.NPCGroups.Add(data);
+                ConfigDataElement.Instance.Save();
             }
         }
 

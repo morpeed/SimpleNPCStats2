@@ -67,7 +67,7 @@ namespace SimpleNPCStats2.Common.Config.UI.NPCUI
                     setValue(newValue);
                     if (_canSave)
                     {
-                        ConfigDataElement.instance.Save();
+                        ConfigDataElement.Instance.Save();
                     }
                 };
                 field_panel.Append(field);
@@ -78,7 +78,7 @@ namespace SimpleNPCStats2.Common.Config.UI.NPCUI
                     setValue(newValue);
                     if (_canSave)
                     {
-                        ConfigDataElement.instance.Save();
+                        ConfigDataElement.Instance.Save();
                     }
                 };
 
@@ -95,7 +95,7 @@ namespace SimpleNPCStats2.Common.Config.UI.NPCUI
                         field.ResetValue(false);
                         slider.ResetValue(false);
                         setValue(field.DefaultValue);
-                        ConfigDataElement.instance.Save();
+                        ConfigDataElement.Instance.Save();
                     }
                 };
                 panel.Append(reset_Panel);
@@ -178,10 +178,10 @@ namespace SimpleNPCStats2.Common.Config.UI.NPCUI
                     CreateStatElement(data.damage.overrideValue, (value) => data.damage.overrideValue = value, overrideText, new UIIntSlider(min:0, max:1000, rounding:10), new UIIntField())),
 
                 CreateStatPanel(Language.GetTextValue(SNSHelper.LocalizationDirectory + "StatDefense"),
-                    CreateStatElement(data.defense.baseValue, (value) => data.defense.baseValue = value, baseText, new UIIntSlider(0, -500, 500, 10), new UIIntField()),
-                    CreateStatElement(data.defense.multValue, (value) => data.defense.multValue = value, multText, new UIFloatSlider(1, 0, 10, 0.2f), new UIFloatField(1, min: 0, max: 10000)),
-                    CreateStatElement(data.defense.flatValue, (value) => data.defense.flatValue = value, flatText, new UIIntSlider(0, -500, 500, 10), new UIIntField()),
-                    CreateStatElement(data.defense.overrideValue, (value) => data.defense.overrideValue = value, overrideText, new UIIntSlider(min:0, max:1000, rounding:10), new UIIntField())),
+                    CreateStatElement(data.defense.baseValue, (value) => data.defense.baseValue = value, baseText, new UIIntSlider(0, -200, 200, 2), new UIIntField()),
+                    CreateStatElement(data.defense.multValue, (value) => data.defense.multValue = value, multText, new UIFloatSlider(1, -5, 5, 0.2f), new UIFloatField(1, min: -10000, max: 10000)),
+                    CreateStatElement(data.defense.flatValue, (value) => data.defense.flatValue = value, flatText, new UIIntSlider(0, -200, 200, 2), new UIIntField()),
+                    CreateStatElement(data.defense.overrideValue, (value) => data.defense.overrideValue = value, overrideText, new UIIntSlider(min:-200, max:200, rounding:10), new UIIntField())),
 
                 CreateStatPanel(Language.GetTextValue(SNSHelper.LocalizationDirectory + "StatRegen"),
                     CreateStatElement(data.regen.baseValue, (value) => data.regen.baseValue = value, baseText, new UIIntSlider(0, -100, 100, 1), new UIIntField()),
@@ -264,7 +264,7 @@ namespace SimpleNPCStats2.Common.Config.UI.NPCUI
                 }
                 if (difference)
                 {
-                    ConfigDataElement.instance.Save();
+                    ConfigDataElement.Instance.Save();
                 }
             };
             upperElement.Append(reset_Panel);

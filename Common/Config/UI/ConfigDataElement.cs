@@ -31,7 +31,7 @@ namespace SimpleNPCStats2.Common.Config.UI
     {
         public UIElement Element {get; private set;}
 
-        public static ConfigDataElement instance;
+        public static ConfigDataElement Instance { get; private set; }
         public void Save() => SetObject(GetObject());
         public ConfigData Data => (ConfigData)GetObject();
 
@@ -39,7 +39,7 @@ namespace SimpleNPCStats2.Common.Config.UI
         {
             base.OnBind();
 
-            instance = this;
+            Instance = this;
             Height.Set(550, 0);
 
             Element = new NPCGroups();
@@ -63,13 +63,6 @@ namespace SimpleNPCStats2.Common.Config.UI
         public override void Draw(SpriteBatch spriteBatch)
         {
             DrawChildren(spriteBatch);
-
-            Rectangle dest = GetDimensions().ToRectangle();
-            dest.Height = 10 + (int)(SNSHelper.DebugCos() * 50);
-            dest.Width = 10 + (int)(SNSHelper.DebugCos(1.82f) * 50);
-            dest.Y += 450;
-            
-            //slider.DebugDrawBoundaries();
         }
     }
 }

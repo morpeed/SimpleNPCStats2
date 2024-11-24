@@ -12,10 +12,6 @@ namespace SimpleNPCStats2
 {
     public class SimpleNPCStats2 : Mod
     {
-        public static bool ModsLoaded { get; private set; }
-        public override void PostSetupContent()
-        {
-            ModsLoaded = true;
-        }
+
     }
 }

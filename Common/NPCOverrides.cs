@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using ReLogic.Utilities;
+using SimpleNPCStats2.Common.Config;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,10 +28,13 @@ namespace SimpleNPCStats2.Common
 
         public override void OnSpawn(NPC npc, IEntitySource source)
         {
-            if (npc.aiStyle == NPCAIStyleID.Fighter || npc.aiStyle == NPCAIStyleID.KingSlime || npc.aiStyle == NPCAIStyleID.DukeFishronBubble || npc.aiStyle == NPCAIStyleID.SmallStarCell || npc.aiStyle == NPCAIStyleID.AncientDoom || npc.aiStyle == NPCAIStyleID.DD2MysteriousPortal)
+            if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result) && result.Enabled && result.OverrideModifyAI)
             {
-                _overrideAiStyle = npc.aiStyle;
-                npc.aiStyle = -1;
+                if (npc.aiStyle == NPCAIStyleID.Fighter || npc.aiStyle == NPCAIStyleID.KingSlime || npc.aiStyle == NPCAIStyleID.DukeFishronBubble || npc.aiStyle == NPCAIStyleID.SmallStarCell || npc.aiStyle == NPCAIStyleID.AncientDoom || npc.aiStyle == NPCAIStyleID.DD2MysteriousPortal)
+                {
+                    _overrideAiStyle = npc.aiStyle;
+                    npc.aiStyle = -1;
+                }
             }
         }
 
@@ -73,7 +77,7 @@ namespace SimpleNPCStats2.Common
 
         public override bool PreAI(NPC npc)
         {
-            if (Main.netMode == NetmodeID.MultiplayerClient)
+            if (_overrideAiStyle == -1 || Main.netMode == NetmodeID.MultiplayerClient)
             {
                 return true;
             }

@@ -169,6 +169,25 @@ Mods: {
 					Tooltip: ""
 				}
 			}
+
+			ConfigSystemAdvanced: {
+				DisplayName: Config Advanced Settings
+
+				overrideModifyAI: {
+					Label: Override / modify vanilla AI
+					Tooltip:
+						'''
+						This mod overrides and modifies some vanilla AIs for compatibility with certain modifiers such as scale.
+						Unlikely this will be needed, but it's here for good measure incase there are mod conflicts, in such case, turn this off.
+						'''
+				}
+
+				Headers.MainHeader:
+					'''
+					These settings are recommended to leave as default values.
+
+					'''
+			}
 		}
 	}
 }

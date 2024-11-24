@@ -92,7 +92,7 @@ namespace SimpleNPCStats2.Common.Config.UI.NPCUI
             back_Panel.leftClickSound = SoundID.MenuClose;
             back_Panel.OnLeftClick += delegate
             {
-                ConfigDataElement.instance.SetElement(new NPCGroups());
+                ConfigDataElement.Instance.SetElement(new NPCGroups());
             };
             Append(back_Panel);
             var back_Text = new UIText(Language.GetTextValue(SNSHelper.LocalizationDirectory + "BrowserBack"));
@@ -116,7 +116,7 @@ namespace SimpleNPCStats2.Common.Config.UI.NPCUI
             name_Field.OnValueChanged += delegate
             {
                 data.name = name_Field.Value;
-                ConfigDataElement.instance.Save();
+                ConfigDataElement.Instance.Save();
             };
             name_Field.SetPadding(4);
             name_Panel.Append(name_Field);
@@ -166,7 +166,7 @@ namespace SimpleNPCStats2.Common.Config.UI.NPCUI
                     FilterGrid();
 
                     ToggleEntryData(entry);
-                    ConfigDataElement.instance.Save();
+                    ConfigDataElement.Instance.Save();
                 };
                 if (activeNpcs.Contains(i))
                 {
@@ -231,7 +231,7 @@ namespace SimpleNPCStats2.Common.Config.UI.NPCUI
                     ToggleEntryData(entry);
                 }
                 FilterGrid();
-                ConfigDataElement.instance.Save();
+                ConfigDataElement.Instance.Save();
             };
             buttons_Panel.Append(toggleAll_Panel);
             var toggleAll_Image = new UIImage(ModContent.Request<Texture2D>("Terraria/Images/UI/Reforge_0"))
@@ -255,7 +255,7 @@ namespace SimpleNPCStats2.Common.Config.UI.NPCUI
                     ToggleEntryData(entry);
                 }
                 FilterGrid();
-                ConfigDataElement.instance.Save();
+                ConfigDataElement.Instance.Save();
             };
             buttons_Panel.Append(enableAll_Panel);
             var enableAll_Image = new UIImage(ModContent.Request<Texture2D>("Terraria/Images/UI/Reforge_0"))
@@ -279,7 +279,7 @@ namespace SimpleNPCStats2.Common.Config.UI.NPCUI
                     ToggleEntryData(entry);
                 }
                 FilterGrid();
-                ConfigDataElement.instance.Save();
+                ConfigDataElement.Instance.Save();
             };
             buttons_Panel.Append(disableAll_Panel);
             var disableAll_Image = new UIImage(ModContent.Request<Texture2D>("Terraria/Images/UI/Reforge_0"))

@@ -2,6 +2,7 @@
 using SimpleNPCStats2.Common.Config.UI.NPCUI;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -18,11 +19,11 @@ namespace SimpleNPCStats2.Common.Config
     public class ConfigSystem : ModConfig
     {
         public override ConfigScope Mode => ConfigScope.ServerSide;
-        public static ConfigSystem instance;
+        public static ConfigSystem Instance { get; private set; }
 
         public ConfigData data = new();
 
-        public static ConfigData Data => instance.data;
+        public static ConfigData Data => Instance.data;
 
         public static Dictionary<int, ConfigData.NPCGroup.StatSet> StaticNPCData { get; private set; }
 
@@ -50,6 +51,19 @@ namespace SimpleNPCStats2.Common.Config
             SaveStaticNPCData();
         }
 
-        public override void OnLoaded() => instance = this;
+        public override void OnLoaded() => Instance = this;
+    }
+
+    public class ConfigSystemAdvanced : ModConfig
+    {
+        public override ConfigScope Mode => ConfigScope.ServerSide;
+        public static ConfigSystemAdvanced Instance { get; private set; }
+
+        [Header("MainHeader")]
+
+        [DefaultValue(true)]
+        public bool overrideModifyAI;
+
+        public override void OnLoaded() => Instance = this;
     }
 }
