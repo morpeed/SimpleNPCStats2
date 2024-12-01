@@ -1,11 +1,4 @@
-2.1.5
-
-Features
-- Added extra config with some advance settings
+2.1.6
 
 Fixes
-- Fixed some non-boss vanilla worms not scaling distance between segments correctly when using scale modifier
-- Fixed some NPCs that have had AI modifications attempting to scale by 0 when unmodified
-
-Misc
-- Adjusted some slider values
+- (Temporary fix) NPC contact damage with other NPCs will no longer be dealt every frame while at default AI Speed value (1)

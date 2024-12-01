@@ -339,7 +339,7 @@ namespace SimpleNPCStats2.Common
         #region AI Speed
         public static void On_NPC_UpdateNPC(On_NPC.orig_UpdateNPC orig, NPC self, int i)
         {
-            if (self.active && self.TryGetGlobalNPC<CustomizedNPC>(out var result) && result.Enabled)
+            if (self.active && self.TryGetGlobalNPC<CustomizedNPC>(out var result) && result.Enabled && result.AISpeed != 1)
             {
                 var immuneCopy = self.immune.ToArray();
 
@@ -370,11 +370,11 @@ namespace SimpleNPCStats2.Common
                 }
 
                 self.immune = immuneCopy;
+
+                return;
             }
-            else
-            {
-                orig(self, i);
-            }
+
+            orig(self, i);
         }
         #endregion
 
