@@ -18,6 +18,12 @@ using Terraria.GameContent;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria.Utilities;
 using Terraria.UI.Chat;
+using Terraria.ModLoader.IO;
+using System.Reflection;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.IO;
+using Terraria.IO;
+using Newtonsoft.Json.Linq;
 
 namespace SimpleNPCStats2.Common
 {
@@ -32,17 +38,14 @@ namespace SimpleNPCStats2.Common
         public ConfigData.NPCGroup.StatSet Stats { get; private set; }
 
         public float MovementSpeed { get; private set; } = 1f;
-        private bool _doMovementSpeed;
         public float Gravity { get; private set; } = 1f;
         public float Scale { get; private set; } = 1f;
         public float AISpeed { get; private set; } = 1f;
         public float AISpeedCounter { get; private set; }
-        private bool _AISpeedImmediateUpdate;
         public bool OverrideModifyAI { get; private set; }
+        public int TypeNetID { get; private set; }
 
-        public int TypeNetId { get; private set; }
-
-        public static readonly Dictionary<int, (float? minScale, float? maxScale)> ScaleClampNPCIds = new()
+        public static readonly Dictionary<int, (float? minScale, float? maxScale)> ScaleClampNPCIDs = new()
         {
             { NPCID.Golem, (null, 1.5f) },
             { NPCID.GolemFistLeft, (null, 1.5f) },
@@ -51,161 +54,215 @@ namespace SimpleNPCStats2.Common
             { NPCID.GolemHeadFree, (null, 1.5f) } // Not needed technically, but for consistency
         };
 
-        // Disables movement speed modifier (value will still be saved, but not in use, so will be transferred to projectiles)
-        public static readonly HashSet<int> NoMovementSpeedNPCs =
+        /// Disables movement speed modifier (value will still be saved, but not in use, so will be transferred to projectiles)
+        private bool _doMovementSpeed;
+        public static readonly HashSet<int> NoMovementSpeedNPCIDs =
         [
             NPCID.CultistBoss,
-            NPCID.CultistBossClone
+            NPCID.CultistBossClone,
+            NPCID.GolemFistLeft,
+            NPCID.GolemFistRight,
+            NPCID.GolemHead
         ];
 
-        #region NPC Setup
-        /*
-        // Done as an IL edit to take place after all other mods' OnSpawn overrides
-        private static void IL_NPC_NewNPC(ILContext context)
-        {
-            try
-            {
-                ILCursor cursor = new ILCursor(context);
-
-                if (cursor.TryGotoNext(MoveType.After,
-                    i => i.MatchCall("Terraria.ModLoader.NPCLoader", "OnSpawn")
-                    ))
-                {
-                    cursor.EmitLdloc0(); // Local variable for the NPCs whoAmI (Static method, no attached NPC instance)
-                    cursor.EmitLdarg3(); // Argument for the type/netid of the NPC
-                    cursor.EmitDelegate((int whoAmI, int typeNetId) =>
-                    {
-                        
-                        Main.NewText(typeNetId);
-                        var npc = Main.npc[whoAmI];
-                        if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result))
-                        {
-                            result.TypeNetId = typeNetId;
-                            result.Setup(npc);
-                        }
-                        
-                    });
-                }
-            }
-            catch
-            {
-                MonoModHooks.DumpIL(ModContent.GetInstance<SimpleNPCStats2>(), context);
-            }
-        }
-        */
-
         // Static because GlobalNPC is created sometime during SetDefaults (I think)
-        private static bool _fromNetId;
+        private static bool _fromNetID;
         public static void On_NPC_SetDefaultsFromNetId(On_NPC.orig_SetDefaultsFromNetId orig, NPC self, int id, NPCSpawnParams spawnparams)
         {
-            _fromNetId = true;
+            _fromNetID = true;
             orig(self, id, spawnparams);
-            _fromNetId = false;
+            _fromNetID = false;
 
-            // Ensures it's done after content samples are populated etc (probably)
             if (!Main.gameMenu)
             {
                 if (self.TryGetGlobalNPC<CustomizedNPC>(out var result))
                 {
-                    result.TypeNetId = id;
-                    result.Setup(self);
-                }
-            }
-        }
-
-        public static void On_NPC_SetDefaults(On_NPC.orig_SetDefaults orig, NPC self, int Type, NPCSpawnParams spawnparams)
-        {
-            orig(self, Type, spawnparams);
-
-            // Method returns early if Type < 0
-            if (!Main.gameMenu && Type > 0)
-            {
-                if (!_fromNetId)
-                {
-                    if (self.TryGetGlobalNPC<CustomizedNPC>(out var result))
+                    if (!result._setupFromLoadData)
                     {
-                        result.TypeNetId = self.type;
+                        result.TypeNetID = self.type;
                         result.Setup(self);
                     }
                 }
             }
         }
-
-        private bool Setup(NPC npc)
+        public static void On_NPC_SetDefaults(On_NPC.orig_SetDefaults orig, NPC self, int Type, NPCSpawnParams spawnparams)
         {
-            /*
-            void DebugNPC()
+            orig(self, Type, spawnparams);
+
+            // Method returns early if Type < 0
+            if (!Main.gameMenu && Type > 0 && !_fromNetID)
             {
-                Main.NewText(string.Join(", ",
-                    $"Scale {npc.scale}",
-                    $"Width {npc.width}",
-                    $"Height {npc.height}",
-                    $"LifeMax {npc.lifeMax}",
-                    $"Damage {npc.damage}",
-                    $"Defense {npc.defense}"
-                    ));
-            }
-            */
-
-            if (ConfigSystem.StaticNPCData.TryGetValue(TypeNetId, out var dataValue))
-            {
-                //DebugNPC();
-                Stats = dataValue;
-                
-                OldStatInfo = StatInfo.Create(npc);
-
-                Gravity = Stats.gravity.GetValue(1);
-                AISpeed = Stats.aiSpeed.GetValue(1);
-                AISpeedCounter = -1;
-                _AISpeedImmediateUpdate = true;
-                MovementSpeed = Stats.movement.GetValue(1);
-                _doMovementSpeed = !NoMovementSpeedNPCs.Contains(TypeNetId);
-
-                npc.lifeMax = Math.Max(1, (int)Stats.life.GetValue(npc.lifeMax));
-                npc.life = npc.lifeMax;
-
-                npc.defDefense = (int)Stats.defense.GetValue(npc.defDefense);
-                npc.defense = npc.defDefense;
-
-                npc.defDamage = (int)Math.Max(0, Stats.damage.GetValue(npc.defDamage));
-                npc.damage = npc.defDamage;
-
-                var oldScale = npc.scale;
-                npc.scale *= Stats.scale.GetValue(1);
-                if (ScaleClampNPCIds.TryGetValue(TypeNetId, out var scaleClampValue))
+                if (self.TryGetGlobalNPC<CustomizedNPC>(out var result))
                 {
-                    if (scaleClampValue.minScale != null && npc.scale < scaleClampValue.minScale)
+                    if (!result._setupFromLoadData)
                     {
-                        npc.scale = scaleClampValue.minScale.Value;
-                    }
-                    else if (scaleClampValue.maxScale != null && npc.scale > scaleClampValue.maxScale)
-                    {
-                        npc.scale = scaleClampValue.maxScale.Value;
+                        result.TypeNetID = self.type;
+                        result.Setup(self);
                     }
                 }
-                Scale = npc.scale / oldScale;
-                npc.width = Math.Max(1, (int)(npc.width * Scale));
-                npc.height = Math.Max(1, (int)(npc.height * Scale));
-
-                npc.knockBackResist = Stats.knockback.GetValue(npc.knockBackResist);
-
-                OverrideModifyAI = ConfigSystemAdvanced.Instance.overrideModifyAI;
-
-                NewStatInfo = StatInfo.Create(npc);
-
-                return true;
+            }
+        }
+        public bool Setup(NPC npc, ConfigData.NPCGroup.StatSet stats = null)
+        {
+            if (stats == null)
+            {
+                if (ConfigSystem.StaticNPCData.TryGetValue(TypeNetID, out var dataValue))
+                {
+                    Stats = dataValue;
+                }
+                else
+                {
+                    Stats = null;
+                    return false;
+                }
             }
             else
             {
-                Stats = null;
-                return false;
+                Stats = stats;
+            }
+
+            OldStatInfo = StatInfo.Create(npc);
+
+            Gravity = Stats.gravity.GetValue(1);
+            AISpeed = Stats.aiSpeed.GetValue(1);
+            AISpeedCounter = 1;
+            MovementSpeed = Stats.movement.GetValue(1);
+            _doMovementSpeed = !NoMovementSpeedNPCIDs.Contains(TypeNetID);
+
+            npc.lifeMax = Math.Max(1, (int)Stats.life.GetValue(npc.lifeMax));
+            npc.life = npc.lifeMax;
+
+            npc.defDefense = (int)Stats.defense.GetValue(npc.defDefense);
+            npc.defense = npc.defDefense;
+
+            npc.defDamage = (int)Math.Max(0, Stats.damage.GetValue(npc.defDamage));
+            npc.damage = npc.defDamage;
+
+            var oldScale = npc.scale;
+            npc.scale *= Stats.scale.GetValue(1);
+            if (ScaleClampNPCIDs.TryGetValue(TypeNetID, out var scaleClampValue))
+            {
+                if (scaleClampValue.minScale != null && npc.scale < scaleClampValue.minScale)
+                {
+                    npc.scale = scaleClampValue.minScale.Value;
+                }
+                else if (scaleClampValue.maxScale != null && npc.scale > scaleClampValue.maxScale)
+                {
+                    npc.scale = scaleClampValue.maxScale.Value;
+                }
+            }
+            Scale = npc.scale / oldScale;
+            npc.width = Math.Max(1, (int)(npc.width * Scale));
+            npc.height = Math.Max(1, (int)(npc.height * Scale));
+
+            npc.knockBackResist = Stats.knockback.GetValue(npc.knockBackResist);
+
+            OverrideModifyAI = ConfigSystemAdvanced.Instance.overrideModifyAI;
+
+            NewStatInfo = StatInfo.Create(npc);
+
+            return true;
+        }
+
+        // AI Speed && Movement Speed
+        public static void IL_NPC_UpdateNPC_Inner(ILContext context)
+        {
+            try
+            {
+                ILCursor cursor = new ILCursor(context);
+
+                // Method gets inlined so done as IL edit instead of detour
+                if (cursor.TryGotoNext(MoveType.Before,
+                    i => i.MatchLdarg0(),
+                    i => i.MatchCall("Terraria.NPC", "AI")
+                    ))
+                {
+                    cursor.EmitLdarg0();
+                    cursor.EmitDelegate((NPC npc) =>
+                    {
+                        if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result) && result.Enabled)
+                        {
+                            result.AISpeedCounter += result.AISpeed;
+                            while (result.AISpeedCounter >= 1)
+                            {
+                                result.AISpeedCounter--;
+                                npc.AI();
+                            }
+                            return true;
+                        }
+                        return false;
+                    });
+                    var skipLabel = cursor.DefineLabel();
+                    cursor.EmitBrtrue(skipLabel);
+
+                    cursor.Index += 2;
+
+                    cursor.MarkLabel(skipLabel);
+                }
+
+                if (cursor.TryGotoNext(MoveType.Before,
+                    i => i.MatchLdarg0(),
+                    i => i.MatchCall("Terraria.NPC", "UpdateCollision")
+                    ))
+                {
+                    cursor.EmitLdarga(0);
+                    cursor.EmitDelegate((ref NPC npc) =>
+                    {
+                        if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result) && result.Enabled && result._doMovementSpeed)
+                        {
+                            npc.velocity *= result.MovementSpeed;
+                        }
+                    });
+
+                    // After
+                    cursor.Index += 2;
+
+                    cursor.EmitLdarga(0);
+                    cursor.EmitDelegate((ref NPC npc) =>
+                    {
+                        if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result) && result.Enabled && result._doMovementSpeed && result.MovementSpeed != 0)
+                        {
+                            npc.velocity /= result.MovementSpeed;
+                        }
+                    });
+                }
+
+                if (cursor.TryGotoNext(MoveType.After,
+                    i => i.MatchLdarg0(),
+                    i => i.MatchLdarg0(),
+                    i => i.MatchLdfld("Terraria.Entity", "position"),
+                    i => i.MatchLdarg0(),
+                    i => i.MatchLdfld("Terraria.Entity", "velocity"),
+                    // HERE
+                    i => i.MatchCall("Microsoft.Xna.Framework.Vector2", "op_Addition"),
+                    i => i.MatchStfld("Terraria.Entity", "position")
+                    ))
+                {
+                    cursor.Index -= 2;
+
+                    cursor.EmitLdarg0();
+                    cursor.EmitDelegate((NPC npc) =>
+                    {
+                        if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result) && result.Enabled && result._doMovementSpeed)
+                        {
+                            return result.MovementSpeed;
+                        }
+                        return 1;
+                    });
+                    cursor.EmitCall(typeof(Vector2).GetMethod("op_Multiply", BindingFlags.Static | BindingFlags.Public, null, [typeof(Vector2), typeof(float)], null));
+                }
+
+                cursor.UpdateInstructionOffsets();
+            }
+            catch (Exception)
+            {
+                MonoModHooks.DumpIL(ModContent.GetInstance<SimpleNPCStats2>(), context);
             }
         }
-        #endregion
 
-        #region Life regen
-        private static bool _lifeRegenModified;
-        public static void IL_NPC_LifeRegen(ILContext context)
+        // Life Regen
+        private static bool _IL_LifeRegenModified;
+        public static void IL_NPC_UpdateNPC_BuffApplyDOTs(ILContext context)
         {
             try
             {
@@ -220,11 +277,11 @@ namespace SimpleNPCStats2.Common
 
                     Modifies life regen after all other mods
                  */
-            if (cursor.TryGotoNext(MoveType.After,
-                    i => i.MatchLdarg0(),
-                    i => i.MatchLdloca(0),
-                    i => i.MatchCall("Terraria.ModLoader.NPCLoader", "UpdateLifeRegen")
-                    ))
+                if (cursor.TryGotoNext(MoveType.After,
+                        i => i.MatchLdarg0(),
+                        i => i.MatchLdloca(0),
+                        i => i.MatchCall("Terraria.ModLoader.NPCLoader", "UpdateLifeRegen")
+                        ))
                 {
                     cursor.EmitLdarga(0); // ref this
                     cursor.EmitLdloca(0); // num value / regen visual number                    
@@ -243,14 +300,12 @@ namespace SimpleNPCStats2.Common
                                     {
                                         regenNumber = 1;
                                     }
-                                    _lifeRegenModified = true;
-                                    npc.lifeRegen = (int)(npc.lifeRegen / result.AISpeed);
+                                    _IL_LifeRegenModified = true;
                                     return;
                                 }
-                                npc.lifeRegen = (int)(npc.lifeRegen / result.AISpeed);
                             }
                         }
-                        _lifeRegenModified = false;
+                        _IL_LifeRegenModified = false;
                     });
                 }
 
@@ -269,7 +324,7 @@ namespace SimpleNPCStats2.Common
                     cursor.EmitLdloc0();
                     cursor.EmitDelegate((NPC npc, int regenNumber) =>
                     {
-                        if (_lifeRegenModified)
+                        if (_IL_LifeRegenModified)
                         {
                             return regenNumber;
                         }
@@ -296,7 +351,7 @@ namespace SimpleNPCStats2.Common
                     cursor.EmitLdloc0();
                     cursor.EmitDelegate((NPC npc, int regenNumber) =>
                     {
-                        if (_lifeRegenModified)
+                        if (_IL_LifeRegenModified)
                         {
                             int visualNumber = Math.Min(npc.lifeMax - npc.life, regenNumber);
                             npc.HealEffect(visualNumber);
@@ -320,7 +375,7 @@ namespace SimpleNPCStats2.Common
                     cursor.EmitLdloc0();
                     cursor.EmitDelegate((NPC npc, int regenNumber) =>
                     {
-                        if (_lifeRegenModified)
+                        if (_IL_LifeRegenModified)
                         {
                             return regenNumber;
                         }
@@ -334,264 +389,62 @@ namespace SimpleNPCStats2.Common
                 MonoModHooks.DumpIL(ModContent.GetInstance<SimpleNPCStats2>(), context);
             }
         }
-        #endregion
 
-        #region AI Speed
-        public static void On_NPC_UpdateNPC(On_NPC.orig_UpdateNPC orig, NPC self, int i)
+        private bool _setupFromLoadData;
+        public override void LoadData(NPC npc, TagCompound tag)
         {
-            if (self.active && self.TryGetGlobalNPC<CustomizedNPC>(out var result) && result.Enabled && result.AISpeed != 1)
+            if (tag.TryGet<float>("xOff", out var value2))
             {
-                var immuneCopy = self.immune.ToArray();
+                npc.position += new Vector2(value2, (float)tag["yOff"]);
+            }
 
-                if (result._AISpeedImmediateUpdate)
-                {
-                    orig(self, i);
-                    result._AISpeedImmediateUpdate = false;
-                }
+            _setupFromLoadData = true;
 
-                if (result.AISpeed <= 0)
-                {
-                    return;
-                }
+            if (tag.TryGet<ConfigData.NPCGroup.StatSet>(nameof(Stats), out var value))
+            {
+                Setup(npc, value);
+            }
+            else
+            {
+                Setup(npc);
+            }
+        }
+        public override void SaveData(NPC npc, TagCompound tag)
+        {
+            if (Stats != null)
+            {
+                tag[nameof(Stats)] = Stats;
 
-                result.AISpeedCounter += result.AISpeed;
-                while (result.AISpeedCounter >= 1)
+                tag.Remove("xOff");
+                tag.Remove("yOff");
+            }
+            else if (WorldGen.generatingWorld)
+            {
+                if (ConfigSystem.StaticNPCData.TryGetValue(npc.type, out var value))
                 {
-                    orig(self, i);
-                    result.AISpeedCounter--;
-                }
+                    tag[nameof(Stats)] = value;
 
-                for (int j = 0; j < immuneCopy.Length; j++)
-                {
-                    if (immuneCopy[j] > 0)
+                    float scale = value.scale.GetValue(npc.scale);
+                    if (scale != 1)
                     {
-                        immuneCopy[j]--;
+                        float newWidth = (int)(npc.width * scale);
+                        float newHeight = (int)(npc.height * scale);
+
+                        tag["xOff"] = -(newWidth - npc.width) / 2f;
+                        tag["yOff"] = -(newHeight - npc.height) / 2f;
                     }
                 }
-
-                self.immune = immuneCopy;
-
-                return;
             }
-
-            orig(self, i);
         }
-        #endregion
 
-        #region Movement Speed
-        public static void IL_NPC_Movement(ILContext il)
+        public override void SendExtraAI(NPC npc, BitWriter bitWriter, BinaryWriter binaryWriter)
         {
-            try
-            {
-                ILCursor c;
-
-                /*
-                 * Movement Speed (for noTileCollide NPCs)
-                 * Match before the first UpdateCollision call
-                 * Multiply velocity by speed
-                 */
-                c = new ILCursor(il);
-                if (c.TryGotoNext(MoveType.Before,
-                    i => i.MatchLdarg0(),
-                    i => i.MatchCall<NPC>("UpdateCollision")    // IL_077e: call instance void Terraria.NPC::UpdateCollision()
-                    ))
-                {
-                    c.EmitLdarga(0);                            // ref this
-                    c.EmitDelegate((ref NPC npc) =>
-                    {
-                        if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result))
-                        {
-                            if (result.Enabled && result._doMovementSpeed)
-                            {
-                                npc.velocity *= result.MovementSpeed;
-                            }
-                        }
-                    });
-                }
-                else
-                {
-                    Debug.WriteLine("Failure to add pre-UpdateCollision delegate !!!!!");
-                }
-
-                /*
-                 * Movement Speed (for noTileCollide NPCs)
-                 * Match after the first UpdateCollision call
-                 * Divide velocity by speed
-                 */
-                c = new ILCursor(il);
-                if (c.TryGotoNext(MoveType.After,
-                    i => i.MatchLdarg0(),
-                    i => i.MatchCall<NPC>("UpdateCollision")    // IL_077e: call instance void Terraria.NPC::UpdateCollision()
-                    ))
-                {
-                    c.EmitLdarga(0);                            // ref this
-                    c.EmitDelegate((ref NPC npc) =>
-                    {
-                        if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result))
-                        {
-                            if (result.Enabled && result._doMovementSpeed && result.MovementSpeed != 0)
-                            {
-                                npc.velocity /= result.MovementSpeed;
-                            }
-                        }
-                    });
-                }
-                else
-                {
-                    Debug.WriteLine("Failure to add post-UpdateCollision delegate !!!!!");
-                }
-
-                /*
-                 * Movement speed (for tile coliding NPCs)
-                 * Match after position += velocity
-                 * Adjust velocity to speed
-                 */
-                c = new ILCursor(il);
-                if (c.TryGotoNext(MoveType.After,
-                    i => i.MatchLdarg0(),
-                    i => i.MatchLdarg0(),
-                    i => i.MatchLdfld<Entity>("position"),
-                    i => i.MatchLdarg0(),
-                    i => i.MatchLdfld<Entity>("velocity"),
-                    i => i.MatchCall<Vector2>("op_Addition"),
-                    i => i.MatchStfld<Entity>("position")
-                    ))
-                {
-                    c.EmitLdarga(0);                             // this
-                    c.EmitDelegate((ref NPC npc) =>
-                    {
-                        if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result))
-                        {
-                            if (result.Enabled && result._doMovementSpeed)
-                            {
-                                npc.position += npc.velocity * (result.MovementSpeed - 1);
-                            }
-                        }
-                    });
-                }
-                else
-                {
-                    Debug.WriteLine("Failure to add post base.position += base.velocity delegate !!!!!");
-                }
-
-                /*
-                // Size
-                c = new ILCursor(il);
-                if (c.TryGotoNext(MoveType.Before,
-                    i => i.MatchLdarg0(),
-                    i => i.MatchCall<NPC>("AI")
-                    ))
-                {
-                    c.EmitLdarga(0);
-                    c.EmitDelegate((ref NPC npc) =>
-                    {
-                        if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result))
-                        {
-                            if (result.Enabled)
-                            {
-                                // Key is removed upon NPC spawning, so this will fail on the first update (won't use size from dummy/old npc)
-                                if (result.tempStats != null)
-                                {
-                                    result.tempStats.Value.UpdateNPC(npc);
-
-                                    npc.position += result.tempStats.Value.positionShift;
-                                }
-                            }
-                        }
-                    });
-                }
-                else
-                {
-                    Debug.WriteLine("Failure to add pre-AI delegate !!!!!");
-                }
-
-                c = new ILCursor(il);
-                if (c.TryGotoNext(MoveType.After,
-                    i => i.MatchLdarg0(),
-                    i => i.MatchCall<NPC>("AI")
-                    ))
-                {
-                    c.EmitLdarga(0);
-                    c.EmitDelegate((ref NPC npc) =>
-                    {
-                        if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result))
-                        {
-                            if (result.Enabled)
-                            {
-                                var tempStats = TempStats.Create(npc);
-
-                                var oldWidth = npc.width;
-                                var oldHeight = npc.height;
-                                var lifePercent = npc.GetLifePercent();
-
-                                if (result.UsesDynamicScaling)
-                                {
-                                    ScaleNPC(npc, result.GetScaleIncreaseClamped(npc));
-                                }
-                                npc.lifeMax = (int)result.Stats.life.GetValue(npc.lifeMax);
-                                if (npc.lifeMax <= 0)
-                                {
-                                    npc.lifeMax = 1;
-                                }
-                                npc.defense = (int)result.Stats.defense.GetValue(npc.defense);
-                                npc.damage = (int)result.Stats.damage.GetValue(npc.damage);
-
-                                tempStats.positionShift = new Vector2((npc.width - oldWidth) / 2f, (npc.height - oldHeight) / 2f);
-                                npc.position -= tempStats.positionShift;
-
-                                result.tempStats = tempStats;
-                            }
-                        }
-                    });
-                }
-                else
-                {
-                    Debug.WriteLine("Failure to add post-AI delegate !!!!!");
-                }
-                */
-            }
-            catch (Exception)
-            {
-                MonoModHooks.DumpIL(ModContent.GetInstance<SimpleNPCStats2>(), il);
-            }
+            binaryWriter.Write(AISpeedCounter);
         }
-        #endregion
-
-        /*
-        public static void IL_NPC_NewNPC(ILContext context)
+        public override void ReceiveExtraAI(NPC npc, BitReader bitReader, BinaryReader binaryReader)
         {
-            try
-            {
-                ILCursor cursor;
-
-                cursor = new ILCursor(context);
-                if (cursor.TryGotoNext(MoveType.After,
-                    i => i.MatchCall("Terraria.ModLoader.NPCLoader", "OnSpawn")
-                    ))
-                {
-                    cursor.EmitLdloc0();
-                    cursor.EmitDelegate((int npcWhoAmI) =>
-                    {
-                        var npc = Main.npc[npcWhoAmI];
-                        if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result))
-                        {
-                            if (result.Enabled)
-                            {
-                                result.NewStatInfo = StatInfo.Create(npc);
-                                Main.NewText(result.OldStatInfo);
-                                Main.NewText(result.NewStatInfo);
-                                Main.NewText(result.NewStatInfo.damage / (float)result.OldStatInfo.damage);
-                            }
-                        }
-                    });
-                }
-            }
-            catch (Exception)
-            {
-                MonoModHooks.DumpIL(ModContent.GetInstance<SimpleNPCStats2>(), context);
-            }
+            AISpeedCounter = binaryReader.ReadSingle();
         }
-        */
 
         public override bool PreAI(NPC npc)
         {
@@ -599,11 +452,6 @@ namespace SimpleNPCStats2.Common
             {
                 npc.MaxFallSpeedMultiplier *= Gravity;
                 npc.GravityMultiplier *= Gravity;
-                if (_doMovementSpeed)
-                {
-                    npc.MaxFallSpeedMultiplier /= MovementSpeed;
-                    npc.GravityMultiplier /= MovementSpeed;
-                }
             }
             return true;
         }
@@ -613,14 +461,9 @@ namespace SimpleNPCStats2.Common
 
         }
 
-        public override void ModifyGlobalLoot(GlobalLoot globalLoot)
-        {
-
-        }
-
         public override void EditSpawnPool(IDictionary<int, float> pool, NPCSpawnInfo spawnInfo)
         {
-            
+
         }
 
         public override void ModifyHoverBoundingBox(NPC npc, ref Rectangle boundingBox)
@@ -691,180 +534,5 @@ namespace SimpleNPCStats2.Common
                 Utils.DrawBorderString(spriteBatch, text, npc.Center + new Vector2(0, npc.height / 2 + 50 + yOff) - Main.screenPosition, Color.White, 1, 0.5f, 0.5f);
             }
         }
-        /*
-         
-        public TempStats? tempStats;
-        public struct TempStats
-        {
-            public float scale;
-            public int width;
-            public int height;
-            public int lifeMax;
-            public int defense;
-            public Vector2 positionShift;
-
-            public readonly void UpdateNPC(NPC npc)
-            {
-                npc.scale = this.scale;
-                npc.width = this.width;
-                npc.height = this.height;
-                npc.lifeMax = this.lifeMax;
-                npc.defense = this.defense;
-            }
-
-            public static TempStats Create(NPC npc)
-            {
-                var stats = new TempStats()
-                {
-                    scale = npc.scale,
-                    width = npc.width,
-                    height = npc.height,
-                    lifeMax = npc.lifeMax,
-                    defense = npc.defense,
-                };
-                return stats;
-            }
-        }
-
-        private bool isSegmented;
-
-        public static bool GetIsSegmented(NPC npc)
-        {
-            if (npc.type < NPCID.Count)
-            {   
-                return SegmentedNPCIds.Contains(npc.type);
-            }
-            else
-            {
-                return SegmentedModNPCs.Contains(npc.ModNPC.FullName);
-            }
-        }
-
-        public static HashSet<int> SegmentedNPCIds =
-        [
-            NPCID.DevourerHead,
-            NPCID.DevourerBody,
-            NPCID.DevourerTail,
-            NPCID.GiantWormHead,
-            NPCID.GiantWormBody,
-            NPCID.GiantWormTail,
-            NPCID.EaterofWorldsHead,
-            NPCID.EaterofWorldsBody,
-            NPCID.EaterofWorldsTail,
-            NPCID.WyvernHead,
-            NPCID.WyvernLegs,
-            NPCID.WyvernBody,
-            NPCID.WyvernBody2,
-            NPCID.WyvernBody3,
-            NPCID.WyvernTail,
-            NPCID.DiggerHead,
-            NPCID.DiggerBody,
-            NPCID.DiggerTail,
-            NPCID.SeekerHead,
-            NPCID.SeekerBody,
-            NPCID.SeekerTail,
-            NPCID.LeechHead,
-            NPCID.LeechBody,
-            NPCID.LeechTail,
-            NPCID.TheDestroyer,
-            NPCID.TheDestroyerBody,
-            NPCID.TheDestroyerTail,
-            NPCID.Golem,
-            NPCID.GolemHead,
-            NPCID.GolemFistLeft,
-            NPCID.GolemFistRight,
-            NPCID.StardustWormHead,
-            NPCID.StardustWormBody,
-            NPCID.StardustWormTail,
-            NPCID.SolarCrawltipedeHead,
-            NPCID.SolarCrawltipedeBody,
-            NPCID.SolarCrawltipedeTail,
-            NPCID.CultistDragonHead,
-            NPCID.CultistDragonBody1,
-            NPCID.CultistDragonBody2,
-            NPCID.CultistDragonBody3,
-            NPCID.CultistDragonBody4,
-            NPCID.CultistDragonTail,
-            NPCID.BloodEelHead,
-            NPCID.BloodEelBody,
-            NPCID.BloodEelTail,
-        ];
-
-        public static HashSet<string> SegmentedModNPCs =
-        [
-            "CalamityMod/EidolonWyrmHead",
-            "CalamityMod/EidolonWyrmBody",
-            "CalamityMod/EidolonWyrmBodyAlt",
-            "CalamityMod/EidolonWyrmTail",
-            "CalamityMod/GulperEelHead",
-            "CalamityMod/GulperEelBody",
-            "CalamityMod/GulperEelBodyAlt",
-            "CalamityMod/GulperEelTail",
-            "CalamityMod/OarfishHead",
-            "CalamityMod/OarfishBody",
-            "CalamityMod/OarfishTail",
-            "CalamityMod/AquaticScourgeHead",
-            "CalamityMod/AquaticScourgeBody",
-            "CalamityMod/AquaticScourgeBodyAlt",
-            "CalamityMod/AquaticScourgeTail",
-            "CalamityMod/AstrumDeusHead",
-            "CalamityMod/AstrumDeusBody",
-            "CalamityMod/AstrumDeusTail",
-            "CalamityMod/DesertNuisanceHead",
-            "CalamityMod/DesertNuisanceHeadYoung",
-            "CalamityMod/DesertNuisanceBody",
-            "CalamityMod/DesertNuisanceBodyYoung",
-            "CalamityMod/DesertNuisanceTail",
-            "CalamityMod/DesertNuisanceTailYoung",
-            "CalamityMod/DesertScourgeHead",
-            "CalamityMod/DesertScourgeBody",
-            "CalamityMod/DesertScourgeTail",
-            "CalamityMod/CosmicGuardianHead",
-            "CalamityMod/CosmicGuardianBody",
-            "CalamityMod/CosmicGuardianTail",
-            "CalamityMod/DevourerofGodsHead",
-            "CalamityMod/DevourerofGodsBody",
-            "CalamityMod/DevourerofGodsTail",
-            "CalamityMod/ThanatosHead",
-            "CalamityMod/ThanatosBody1",
-            "CalamityMod/ThanatosBody2",
-            "CalamityMod/ThanatosTail",
-            "CalamityMod/ArmoredDiggerHead",
-            "CalamityMod/ArmoredDiggerBody",
-            "CalamityMod/ArmoredDiggerTail",
-            "CalamityMod/PerforatorHeadLarge",
-            "CalamityMod/PerforatorHeadMedium",
-            "CalamityMod/PerforatorHeadSmall",
-            "CalamityMod/PerforatorBodyLarge",
-            "CalamityMod/PerforatorBodyMedium",
-            "CalamityMod/PerforatorBodySmall",
-            "CalamityMod/PerforatorTailLarge",
-            "CalamityMod/PerforatorTailMedium",
-            "CalamityMod/PerforatorTailSmall",
-            "CalamityMod/PrimordialWyrmHead",
-            "CalamityMod/PrimordialWyrmBody",
-            "CalamityMod/PrimordialWyrmBodyAlt",
-            "CalamityMod/PrimordialWyrmTail",
-            "CalamityMod/RavagerHead",
-            "CalamityMod/RavagerHead2",
-            "CalamityMod/RavagerBody",
-            "CalamityMod/ClawLeft",
-            "CalamityMod/ClawRight",
-            "CalamityMod/LegLeft",
-            "CalamityMod/LegRight",
-            "CalamityMod/StormWeaverHead",
-            "CalamityMod/StormWeaverBody",
-            "CalamityMod/StormWeaverTail",
-            "CalamityMod/SeaSerpent1",
-            "CalamityMod/SeaSerpent2",
-            "CalamityMod/SeaSerpent3",
-            "CalamityMod/SeaSerpent4",
-            "CalamityMod/SeaSerpent5",
-            "CalamityMod/SepulcherHead",
-            "CalamityMod/SepulcherBody",
-            "CalamityMod/SepulcherArm",
-            "CalamityMod/SepulcherTail",
-        ];
-        */
     }
 }

@@ -14,6 +14,7 @@ using Newtonsoft.Json.Linq;
 using Terraria.GameContent.Creative;
 using Terraria.WorldBuilding;
 using Terraria.ID;
+using System.Reflection;
 
 namespace SimpleNPCStats2.Common
 {
@@ -28,95 +29,8 @@ namespace SimpleNPCStats2.Common
         public float MovementSpeed { get; private set; }
         public float AISpeed { get; private set; }
         public float AISpeedCounter { get; private set; }
-        private bool _AISpeedImmediateUpdate;
 
-        public static void On_Projectile_Update(On_Projectile.orig_Update orig, Projectile self, int i)
-        {
-            if (self.active && self.TryGetGlobalProjectile<CustomizedNPCProjectile>(out var result) && result.Enabled)
-            {
-                if (result._AISpeedImmediateUpdate)
-                {
-                    orig(self, i);
-                    result._AISpeedImmediateUpdate = false;
-                }
-
-                if (result.AISpeed <= 0)
-                {
-                    return;
-                }
-
-                result.AISpeedCounter += result.AISpeed;
-                while (result.AISpeedCounter >= 1)
-                {
-                    orig(self, i);
-                    result.AISpeedCounter--;
-                }
-            }
-            else
-            {
-                orig(self, i);
-            }
-        }
-
-        public static void IL_Projectile_UpdatePosition(ILContext context)
-        {
-            try
-            {
-                ILCursor cursor;
-
-                cursor = new ILCursor(context);
-                if (cursor.TryGotoNext(MoveType.After,
-                    i => i.MatchLdarg0(),
-                    i => i.MatchLdarg0(),
-                    i => i.MatchLdfld<Entity>("position"),
-                    i => i.MatchLdarg1(),
-                    i => i.MatchCall<Vector2>("op_Addition"),
-                    i => i.MatchStfld<Entity>("position")
-                    ))
-                {
-                    cursor.EmitLdarga(0);
-                    cursor.EmitLdarg1();
-                    cursor.EmitDelegate((ref Projectile projectile, Vector2 wetVelocity) =>
-                    {
-                        if (projectile.TryGetGlobalProjectile<CustomizedNPCProjectile>(out var result))
-                        {
-                            if (result.Enabled)
-                            {
-                                projectile.position += wetVelocity * (result.MovementSpeed - 1);
-                            }
-                        }
-                    });
-                }
-
-                if (cursor.TryGotoNext(MoveType.After,
-                    i => i.MatchLdarg0(),
-                    i => i.MatchLdarg0(),
-                    i => i.MatchLdfld<Entity>("position"),
-                    i => i.MatchLdarg0(),
-                    i => i.MatchLdfld<Entity>("velocity"),
-                    i => i.MatchCall<Vector2>("op_Addition"),
-                    i => i.MatchStfld<Entity>("position")
-                    ))
-                {
-                    cursor.EmitLdarga(0);
-                    cursor.EmitDelegate((ref Projectile projectile) =>
-                    {
-                        if (projectile.TryGetGlobalProjectile<CustomizedNPCProjectile>(out var result))
-                        {
-                            if (result.Enabled)
-                            {
-                                projectile.position += projectile.velocity * (result.MovementSpeed - 1);
-                            }
-                        }
-                    });
-                }
-            }
-            catch (Exception)
-            {
-                MonoModHooks.DumpIL(ModContent.GetInstance<SimpleNPCStats2>(), context);
-            }
-        }
-
+        
         public override void OnSpawn(Projectile projectile, IEntitySource source)
         {
             if (source is EntitySource_Parent { Entity: NPC npc })
@@ -127,8 +41,7 @@ namespace SimpleNPCStats2.Common
                     Scale = result.Scale;
                     MovementSpeed = result.MovementSpeed;
                     AISpeed = result.AISpeed;
-                    _AISpeedImmediateUpdate = true;
-                    AISpeedCounter = -1;
+                    AISpeedCounter = 1 - AISpeed;
 
                     projectile.scale *= Scale;
                     projectile.width = Math.Max(1, (int)(projectile.width * Scale));
@@ -146,6 +59,110 @@ namespace SimpleNPCStats2.Common
                         }
                     }
                 }
+            }
+        }
+
+        public static void IL_Projectile_Update(ILContext context)
+        {
+            try
+            {
+                ILCursor cursor = new ILCursor(context);
+
+                // Method gets inlined so done as IL edit instead of detour
+                if (cursor.TryGotoNext(MoveType.Before,
+                    i => i.MatchLdarg0(),
+                    i => i.MatchCall("Terraria.Projectile", "AI")
+                    ))
+                {
+                    cursor.EmitLdarg0();
+                    cursor.EmitDelegate((Projectile projectile) =>
+                    {
+                        if (projectile.TryGetGlobalProjectile<CustomizedNPCProjectile>(out var result) && result.Enabled)
+                        {
+                            result.AISpeedCounter += result.AISpeed;
+                            while (result.AISpeedCounter >= 1)
+                            {
+                                result.AISpeedCounter--;
+                                projectile.AI();
+                            }
+                            return true;
+                        }
+                        return false;
+                    });
+                    var skipLabel = cursor.DefineLabel();
+                    cursor.EmitBrtrue(skipLabel);
+
+                    cursor.Index += 2;
+
+                    cursor.MarkLabel(skipLabel);
+                }
+
+                cursor.UpdateInstructionOffsets();
+                MonoModHooks.DumpIL(ModContent.GetInstance<SimpleNPCStats2>(), context);
+            }
+            catch (Exception)
+            {
+                MonoModHooks.DumpIL(ModContent.GetInstance<SimpleNPCStats2>(), context);
+            }
+        }
+
+        public static void IL_Projectile_UpdatePosition(ILContext context)
+        {
+            try
+            {
+                ILCursor cursor;
+
+                cursor = new ILCursor(context);
+                if (cursor.TryGotoNext(MoveType.After,
+                    i => i.MatchLdarg0(),
+                    i => i.MatchLdarg0(),
+                    i => i.MatchLdfld<Entity>("position"),
+                    i => i.MatchLdarg1(),
+                    // HERE
+                    i => i.MatchCall<Vector2>("op_Addition"),
+                    i => i.MatchStfld<Entity>("position")
+                    ))
+                {
+                    cursor.Index -= 2;
+                    cursor.EmitLdarg(0);
+                    cursor.EmitDelegate((Projectile projectile) =>
+                    {
+                        if (projectile.TryGetGlobalProjectile<CustomizedNPCProjectile>(out var result) && result.Enabled)
+                        {
+                            return result.MovementSpeed;
+                        }
+                        return 1;
+                    });
+                    cursor.EmitCall(typeof(Vector2).GetMethod("op_Multiply", BindingFlags.Static | BindingFlags.Public, null, [typeof(Vector2), typeof(float)], null));
+                }
+
+                if (cursor.TryGotoNext(MoveType.After,
+                    i => i.MatchLdarg0(),
+                    i => i.MatchLdarg0(),
+                    i => i.MatchLdfld<Entity>("position"),
+                    i => i.MatchLdarg0(),
+                    i => i.MatchLdfld<Entity>("velocity"),
+                    // HERE
+                    i => i.MatchCall<Vector2>("op_Addition"),
+                    i => i.MatchStfld<Entity>("position")
+                    ))
+                {
+                    cursor.Index -= 2;
+                    cursor.EmitLdarg(0);
+                    cursor.EmitDelegate((Projectile projectile) =>
+                    {
+                        if (projectile.TryGetGlobalProjectile<CustomizedNPCProjectile>(out var result) && result.Enabled)
+                        {
+                            return result.MovementSpeed;
+                        }
+                        return 1;
+                    });
+                    cursor.EmitCall(typeof(Vector2).GetMethod("op_Multiply", BindingFlags.Static | BindingFlags.Public, null, [typeof(Vector2), typeof(float)], null));
+                }
+            }
+            catch (Exception)
+            {
+                MonoModHooks.DumpIL(ModContent.GetInstance<SimpleNPCStats2>(), context);
             }
         }
     }

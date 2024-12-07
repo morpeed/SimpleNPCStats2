@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
+using Terraria.ModLoader.IO;
 using Terraria.UI.Chat;
 
 namespace SimpleNPCStats2.Common
@@ -19,24 +20,22 @@ namespace SimpleNPCStats2.Common
     {
         public override void PostSetupRecipes()
         {
-            On_NPC.UpdateNPC += CustomizedNPC.On_NPC_UpdateNPC;
             On_NPC.SetDefaultsFromNetId += CustomizedNPC.On_NPC_SetDefaultsFromNetId;
             On_NPC.SetDefaults += CustomizedNPC.On_NPC_SetDefaults;
-
-            On_Projectile.Update += CustomizedNPCProjectile.On_Projectile_Update;
         }
 
         public override void Load()
         {
-            IL_NPC.UpdateNPC_Inner += CustomizedNPC.IL_NPC_Movement;
-            IL_NPC.UpdateNPC_BuffApplyDOTs += CustomizedNPC.IL_NPC_LifeRegen;
-            //IL_NPC.NewNPC += CustomizedNPC.IL_NPC_NewNPC;
+            IL_NPC.UpdateNPC_BuffApplyDOTs += CustomizedNPC.IL_NPC_UpdateNPC_BuffApplyDOTs;
+            IL_NPC.UpdateNPC_Inner += CustomizedNPC.IL_NPC_UpdateNPC_Inner;
             IL_NPC.AI_006_Worms += IL_NPC_AI_006_Worms;
-            //IL_NPC.VanillaAI_Inner += IL_NPC_VanillaAI_Inner; // Too big, don't work, go see NPCOverrides
             IL_NPC.AI_121_QueenSlime += IL_NPC_AI_121_QueenSlime;
             IL_NPC.AI_002_FloatingEye += IL_NPC_AI_002_FloatingEye;
+            //IL_NPC.AI_047_GolemFist += IL_NPC_AI_047_GolemFist;
+            //IL_NPC.VanillaAI_Inner += IL_NPC_VanillaAI_Inner; // Too big, don't work, go see NPCOverrides
             //IL_NPC.AI_003_Fighters += IL_NPC_AI_003_Fighters;// Again, too big, don't work, go see NPCOverrides
 
+            IL_Projectile.Update += CustomizedNPCProjectile.IL_Projectile_Update;
             IL_Projectile.UpdatePosition += CustomizedNPCProjectile.IL_Projectile_UpdatePosition;
         }
 
@@ -50,6 +49,40 @@ namespace SimpleNPCStats2.Common
                     npc.scale *= result.Scale;
                 }
             });
+        }
+
+        // Golem Fist has _doMovementSpeed set to false - here the punch speed is manually adjusted -- maybe later lol
+        private static void IL_NPC_AI_047_GolemFist(ILContext context)
+        {
+            try
+            {
+                ILCursor cursor;
+                cursor = new ILCursor(context);
+                if (cursor.TryGotoNext(MoveType.After,
+                    i => i.MatchLdloc(17),
+                    i => i.MatchLdloc(21),
+                    i => i.MatchDiv(),
+                    i => i.MatchStloc(21)
+                    ))
+                {
+                    cursor.Index--;
+                    cursor.EmitLdarg0();
+                    cursor.EmitDelegate((NPC npc) =>
+                    {
+                        if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result) && result.Enabled)
+                        {
+                            return result.MovementSpeed;
+                        }
+                        return 1f;
+                    });
+                    cursor.EmitMul();
+                }
+                MonoModHooks.DumpIL(ModContent.GetInstance<SimpleNPCStats2>(), context);
+            }
+            catch
+            {
+                MonoModHooks.DumpIL(ModContent.GetInstance<SimpleNPCStats2>(), context);
+            }
         }
 
         private static void IL_NPC_AI_002_FloatingEye(ILContext context)
@@ -75,7 +108,7 @@ namespace SimpleNPCStats2.Common
                     cursor.EmitLdloca(3);
                     cursor.EmitDelegate((NPC npc, ref float xSpeed, ref float ySpeed) =>
                     {
-                        if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result) && result.Enabled && result.OverrideModifyAI)
+                        if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result) && result.Enabled)
                         {
                             xSpeed = Math.Max(2, xSpeed);
                             ySpeed = Math.Max(0.75f, ySpeed);
@@ -97,15 +130,18 @@ namespace SimpleNPCStats2.Common
 
                 void ScaleDistanceValueMul()
                 {
+                    cursor.EmitConvR4();
                     cursor.EmitLdarg0();
-                    cursor.EmitDelegate((int distance, NPC npc) =>
+                    cursor.EmitDelegate((NPC npc) =>
                     {
-                        if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result) && result.Enabled && result.OverrideModifyAI)
+                        if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result) && result.Enabled)
                         {
-                            return (int)(distance * result.Scale);
+                            return result.Scale;
                         }
                         return 1f;
                     });
+                    cursor.EmitMul();
+                    cursor.EmitConvI4();
                 }
 
                 cursor = new ILCursor(context);
@@ -145,7 +181,7 @@ namespace SimpleNPCStats2.Common
                     cursor.EmitLdarg0();
                     cursor.EmitDelegate((NPC npc) =>
                     {
-                        if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result) && result.Enabled && result.OverrideModifyAI)
+                        if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result) && result.Enabled)
                         {
                             return result.Scale;
                         }

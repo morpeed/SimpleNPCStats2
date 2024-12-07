@@ -26,22 +26,28 @@ namespace SimpleNPCStats2.Common
     {
         public override bool InstancePerEntity => true;
 
-        public override void OnSpawn(NPC npc, IEntitySource source)
+        public override void SetDefaults(NPC npc)
         {
-            if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result) && result.Enabled && result.OverrideModifyAI)
+            Setup(npc);
+        }
+        public override void SetDefaultsFromNetId(NPC npc)
+        {
+            Setup(npc);
+        }
+
+        private void Setup(NPC npc)
+        {
+            if (npc.aiStyle == NPCAIStyleID.Fighter || npc.aiStyle == NPCAIStyleID.KingSlime || npc.aiStyle == NPCAIStyleID.DukeFishronBubble || npc.aiStyle == NPCAIStyleID.SmallStarCell || npc.aiStyle == NPCAIStyleID.AncientDoom || npc.aiStyle == NPCAIStyleID.DD2MysteriousPortal)
             {
-                if (npc.aiStyle == NPCAIStyleID.Fighter || npc.aiStyle == NPCAIStyleID.KingSlime || npc.aiStyle == NPCAIStyleID.DukeFishronBubble || npc.aiStyle == NPCAIStyleID.SmallStarCell || npc.aiStyle == NPCAIStyleID.AncientDoom || npc.aiStyle == NPCAIStyleID.DD2MysteriousPortal)
-                {
-                    _overrideAiStyle = npc.aiStyle;
-                    npc.aiStyle = -1;
-                }
+                _overrideAiStyle = npc.aiStyle;
+                npc.aiStyle = -1;
             }
         }
 
         private int _overrideAiStyle = -1;
 
         public override void AI(NPC npc)
-        {  
+        {
             if (_overrideAiStyle == -1)
             {
                 return;

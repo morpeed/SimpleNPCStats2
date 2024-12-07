@@ -1,5 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoMod.Cil;
+using Mono.Cecil.Cil;
 using ReLogic.Content;
 using SimpleNPCStats2.Common.Core;
 using System;
@@ -250,6 +252,43 @@ namespace SimpleNPCStats2.Common
             }
 
             return highest;
+        }
+
+        // Credits to https://github.com/absoluteAquarian/SerousCommonLib/blob/bc7b9bca6eff4fc12bfa09b54dc4b4d2ef081010/src/API/Helpers/ILHelper.cs ... I hope this is no issue!
+        /// <summary>
+		/// Updates the instruction offsets within <paramref name="c"/>
+		/// </summary>
+		/// <param name="c">The cursor</param>
+        public static void UpdateInstructionOffsets(this ILCursor c)
+        {
+            var instrs = c.Instrs;
+            int curOffset = 0;
+
+            static Instruction[] ConvertToInstructions(ILLabel[] labels)
+            {
+                Instruction[] ret = new Instruction[labels.Length];
+
+                for (int i = 0; i < labels.Length; i++)
+                    ret[i] = labels[i].Target;
+
+                return ret;
+            }
+
+            foreach (var ins in instrs)
+            {
+                ins.Offset = curOffset;
+
+                if (ins.OpCode != OpCodes.Switch)
+                    curOffset += ins.GetSize();
+                else
+                {
+                    //'switch' opcodes don't like having the operand as an ILLabel[] when calling GetSize()
+                    //thus, this is required to even let the mod compile
+
+                    Instruction copy = Instruction.Create(ins.OpCode, ConvertToInstructions((ILLabel[])ins.Operand));
+                    curOffset += copy.GetSize();
+                }
+            }
         }
     }
 }

@@ -16,6 +16,7 @@ using SimpleNPCStats2.Common.Core;
 using System.Diagnostics;
 using System.Runtime.Serialization;
 using System.Globalization;
+using Terraria.ModLoader.IO;
 
 namespace SimpleNPCStats2.Common.Config
 {
@@ -159,9 +160,9 @@ namespace SimpleNPCStats2.Common.Config
                 this.name = name;
             }
 
-            public class StatSet
+            public class StatSet : TagSerializable
             {
-                public struct Data<T> where T : IConvertible
+                public struct Data<T> : TagSerializable where T : IConvertible
                 {
                     public T baseValue;
                     public float multValue = 1;
@@ -198,6 +199,24 @@ namespace SimpleNPCStats2.Common.Config
                     {
                         return string.Join(", ", baseValue, multValue, flatValue, overrideValue);
                     }
+
+                    // TagSerializable
+                    public TagCompound SerializeData() => new TagCompound
+                    {
+                        [nameof(baseValue)] = baseValue,
+                        [nameof(multValue)] = multValue,
+                        [nameof(flatValue)] = flatValue,
+                        [nameof(overrideValue)] = overrideValue
+                    };
+
+                    public static readonly Func<TagCompound, Data<T>> DESERIALIZER = Load;
+                    public static Data<T> Load(TagCompound tag) => new Data<T>
+                    {
+                        baseValue = tag.Get<T>(nameof(baseValue)),
+                        multValue = tag.GetFloat(nameof(multValue)),
+                        flatValue = tag.Get<T>(nameof(flatValue)),
+                        overrideValue = tag.Get<T>(nameof(overrideValue))
+                    };
                 }
 
                 public Data<int> life;
@@ -238,6 +257,34 @@ namespace SimpleNPCStats2.Common.Config
                         knockback = knockback
                     };
                 }
+
+                // TagSerializable
+                public TagCompound SerializeData() => new TagCompound
+                {
+                    [nameof(life)] = life,
+                    [nameof(damage)] = damage,
+                    [nameof(defense)] = defense,
+                    [nameof(scale)] = scale,
+                    [nameof(movement)] = movement,
+                    [nameof(aiSpeed)] = aiSpeed,
+                    [nameof(gravity)] = gravity,
+                    [nameof(regen)] = regen,
+                    [nameof(knockback)] = knockback
+                };
+
+                public static readonly Func<TagCompound, StatSet> DESERIALIZER = Load;
+                public static StatSet Load(TagCompound tag) => new StatSet
+                {
+                    life = tag.Get<Data<int>>(nameof(life)),
+                    damage = tag.Get<Data<int>>(nameof(damage)),
+                    defense = tag.Get<Data<int>>(nameof(defense)),
+                    scale = tag.Get<Data<float>>(nameof(scale)),
+                    movement = tag.Get<Data<float>>(nameof(movement)),
+                    aiSpeed = tag.Get<Data<float>>(nameof(aiSpeed)),
+                    gravity = tag.Get<Data<float>>(nameof(gravity)),
+                    regen = tag.Get<Data<int>>(nameof(regen)),
+                    knockback = tag.Get<Data<float>>(nameof(knockback)),
+                };
             }
         }
     }
