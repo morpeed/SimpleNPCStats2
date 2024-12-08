@@ -26,7 +26,7 @@ While in your world goto:
 Settings > Mod Configuration > Simple NPC Customizer > Config
 
 [h3]Does this mod work in multiplayer?[/h3]
-It should!
+It should! But has not been extensively tested.
 
 If there are any bugs, crashes, or any features you'd like to recommend. Please go ahead :)
 

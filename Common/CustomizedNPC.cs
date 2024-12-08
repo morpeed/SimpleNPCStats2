@@ -79,7 +79,7 @@ namespace SimpleNPCStats2.Common
                 {
                     if (!result._setupFromLoadData)
                     {
-                        result.TypeNetID = self.type;
+                        result.TypeNetID = id;
                         result.Setup(self);
                     }
                 }

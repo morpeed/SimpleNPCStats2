@@ -1,12 +1,4 @@
-2.2.0
-
-Features
-- NPC stat modifiers will now save between world loads and will affect NPCs spawned on world creation (Town NPCs, etc) with multiplayer compatibility
-- AI Speed will now only update the AI logic instead of updating everything (for example, you will now need to adjust Movement Speed respectively to gain the same effect as before as updating the position is seperate from AI)
+2.2.1
 
 Fixes
-- As a side effect of the AI Speed change, immunity frame related issues should be fixed now
-- Worms should (AGAIN) properly scale segments and spawn properly
-- Fixed some NPC AI modifications not working on netId NPCs
-
-Probably some other things too... A lot was changed internally!!!
+- Fixed netIds using the stat modifiers of the original NPC
