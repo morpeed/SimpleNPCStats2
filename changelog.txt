@@ -1,4 +1,4 @@
-2.2.1
+2.2.2
 
 Fixes
-- Fixed netIds using the stat modifiers of the original NPC
+- Removed accidentally left in IL dumping every time the mod loads

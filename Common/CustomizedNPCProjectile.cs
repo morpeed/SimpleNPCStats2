@@ -98,7 +98,6 @@ namespace SimpleNPCStats2.Common
                 }
 
                 cursor.UpdateInstructionOffsets();
-                MonoModHooks.DumpIL(ModContent.GetInstance<SimpleNPCStats2>(), context);
             }
             catch (Exception)
             {
