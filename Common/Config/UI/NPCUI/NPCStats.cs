@@ -187,6 +187,7 @@ namespace SimpleNPCStats2.Common.Config.UI.NPCUI
                     CreateStatElement(data.regen.baseValue, (value) => data.regen.baseValue = value, baseText, new UIIntSlider(0, -100, 100, 1), new UIIntField()),
                     CreateStatElement(data.regen.multValue, (value) => data.regen.multValue = value, multText, new UIFloatSlider(1, -5, 5, 0.2f), new UIFloatField(1, min: 0, max: 10000)),
                     CreateStatElement(data.regen.flatValue, (value) => data.regen.flatValue = value, flatText, new UIIntSlider(0, -100, 100, 1), new UIIntField()),
+                    CreateStatElement(data.regenLifeMaxPercent, (value) => data.regenLifeMaxPercent = value, Language.GetTextValue(SNSHelper.LocalizationDirectory + "StatRegenPercent"), new UIFloatSlider(0, -1, 1, 0.02f), new UIFloatField()),
                     CreateStatElement(data.regen.overrideValue, (value) => data.regen.overrideValue = value, overrideText, new UIIntSlider(min:-100, max:100, rounding:1), new UIIntField())),
 
                 CreateStatPanel(Language.GetTextValue(SNSHelper.LocalizationDirectory + "StatKnockback"),

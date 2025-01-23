@@ -55,7 +55,7 @@ namespace SimpleNPCStats2.Common
         };
 
         /// Disables movement speed modifier (value will still be saved, but not in use, so will be transferred to projectiles)
-        private bool _doMovementSpeed;
+        private bool _useMovementSpeed;
         public static readonly HashSet<int> NoMovementSpeedNPCIDs =
         [
             NPCID.CultistBoss,
@@ -127,7 +127,7 @@ namespace SimpleNPCStats2.Common
             AISpeed = Stats.aiSpeed.GetValue(1);
             AISpeedCounter = 1;
             MovementSpeed = Stats.movement.GetValue(1);
-            _doMovementSpeed = !NoMovementSpeedNPCIDs.Contains(TypeNetID);
+            _useMovementSpeed = !NoMovementSpeedNPCIDs.Contains(TypeNetID);
 
             npc.lifeMax = Math.Max(1, (int)Stats.life.GetValue(npc.lifeMax));
             npc.life = npc.lifeMax;
@@ -208,7 +208,7 @@ namespace SimpleNPCStats2.Common
                     cursor.EmitLdarga(0);
                     cursor.EmitDelegate((ref NPC npc) =>
                     {
-                        if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result) && result.Enabled && result._doMovementSpeed)
+                        if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result) && result.Enabled && result._useMovementSpeed)
                         {
                             npc.velocity *= result.MovementSpeed;
                         }
@@ -220,7 +220,7 @@ namespace SimpleNPCStats2.Common
                     cursor.EmitLdarga(0);
                     cursor.EmitDelegate((ref NPC npc) =>
                     {
-                        if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result) && result.Enabled && result._doMovementSpeed && result.MovementSpeed != 0)
+                        if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result) && result.Enabled && result._useMovementSpeed && result.MovementSpeed != 0)
                         {
                             npc.velocity /= result.MovementSpeed;
                         }
@@ -243,7 +243,7 @@ namespace SimpleNPCStats2.Common
                     cursor.EmitLdarg0();
                     cursor.EmitDelegate((NPC npc) =>
                     {
-                        if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result) && result.Enabled && result._doMovementSpeed)
+                        if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result) && result.Enabled && result._useMovementSpeed)
                         {
                             return result.MovementSpeed;
                         }
@@ -291,7 +291,16 @@ namespace SimpleNPCStats2.Common
                         {
                             if (result.Enabled && result.AISpeed > 0) // Won't be able to update regen if there's no AI
                             {
-                                var newRegen = (int)result.Stats.regen.GetValue(npc.lifeRegen);
+                                int newRegen;
+                                if (result.Stats.regen.UsesOverride)
+                                {
+                                    newRegen = result.Stats.regen.overrideValue;
+                                }
+                                else
+                                {
+                                    newRegen = (int)((result.Stats.regen.baseValue * result.Stats.regen.multValue) + result.Stats.regen.flatValue + (npc.lifeMax * result.Stats.regenLifeMaxPercent));
+                                }
+
                                 if (newRegen != npc.lifeRegen)
                                 {
                                     npc.lifeRegen = newRegen * 2;

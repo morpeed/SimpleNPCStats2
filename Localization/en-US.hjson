@@ -56,6 +56,7 @@ Mods: {
 		StatMult: Multiplicative (*)
 		StatFlat: Flat (+)
 		StatOverride: Override (=)
+		StatRegenPercent: Life Max (+%)
 		StatReset: Reset value to default
 		StatResetAll: Reset all values to default
 		StatHealth: "[i:29] Health [i:29]"
@@ -168,6 +169,11 @@ Mods: {
 					Label: knockback
 					Tooltip: ""
 				}
+
+				regenLifeMaxPercent: {
+					Label: regen Life Max Percent
+					Tooltip: ""
+				}
 			}
 
 			ConfigSystemAdvanced: {
@@ -182,11 +188,30 @@ Mods: {
 						'''
 				}
 
-				Headers.MainHeader:
-					'''
-					These settings are recommended to leave as default values.
+				Headers: {
+					ProjectileHeader: Projectile Settings
+					MiscHeader: Misc Settings
+				}
 
-					'''
+				projectileRelativeDamage: {
+					Label: Relative Damage
+					Tooltip: Projectile damage will attempt to be relative to the damage difference of it's owner.
+				}
+
+				projectileRelativeScale: {
+					Label: Relative Size
+					Tooltip: Projectile size will attempt to be relative to the size difference of it's owner.
+				}
+
+				projectileUseMovementSpeed: {
+					Label: Use Movement Speed
+					Tooltip: Projectiles will have it's owner's movement speed applied to itself.
+				}
+
+				projectileUseAISpeed: {
+					Label: Use AI Speed
+					Tooltip: Projectiles will have it's owner's AI speed applied to itself.
+				}
 			}
 		}
 	}

@@ -25,9 +25,12 @@ namespace SimpleNPCStats2.Common
         public bool Enabled => Stats != null;
         public ConfigData.NPCGroup.StatSet Stats { get; private set; }
 
+        public bool UseScale { get; private set; }
         public float Scale { get; private set; }
         public float MovementSpeed { get; private set; }
+        public bool UseMovementSpeed { get; private set; }
         public float AISpeed { get; private set; }
+        public bool UseAISpeed { get; private set; }
         public float AISpeedCounter { get; private set; }
 
         
@@ -43,11 +46,18 @@ namespace SimpleNPCStats2.Common
                     AISpeed = result.AISpeed;
                     AISpeedCounter = 1 - AISpeed;
 
-                    projectile.scale *= Scale;
-                    projectile.width = Math.Max(1, (int)(projectile.width * Scale));
-                    projectile.height = Math.Max(1, (int)(projectile.height * Scale));
+                    UseMovementSpeed = ConfigSystemAdvanced.Instance.projectileUseMovementSpeed;
+                    UseAISpeed = ConfigSystemAdvanced.Instance.projectileUseAISpeed;
+                    UseScale = ConfigSystemAdvanced.Instance.projectileRelativeScale;
 
-                    if (result.OldStatInfo.defDamage != 0) // Unknown what to do if there's an increase from 0, so do nothing
+                    if (UseScale)
+                    {
+                        projectile.scale *= Scale;
+                        projectile.width = Math.Max(1, (int)(projectile.width * Scale));
+                        projectile.height = Math.Max(1, (int)(projectile.height * Scale));
+                    }
+
+                    if (ConfigSystemAdvanced.Instance.projectileRelativeDamage && result.OldStatInfo.defDamage != 0) // Unknown what to do if there's an increase from 0, so do nothing
                     {
                         if (result.NewStatInfo.defDamage == 0) // Clamp damage to 0-1 if damage is decreased to 0
                         {
@@ -74,10 +84,11 @@ namespace SimpleNPCStats2.Common
                     i => i.MatchCall("Terraria.Projectile", "AI")
                     ))
                 {
-                    cursor.EmitLdarg0();
+                    cursor.Index++;
+                    // Ldarg0 emitted
                     cursor.EmitDelegate((Projectile projectile) =>
                     {
-                        if (projectile.TryGetGlobalProjectile<CustomizedNPCProjectile>(out var result) && result.Enabled)
+                        if (projectile.TryGetGlobalProjectile<CustomizedNPCProjectile>(out var result) && result.Enabled && result.UseAISpeed)
                         {
                             result.AISpeedCounter += result.AISpeed;
                             while (result.AISpeedCounter >= 1)
@@ -92,7 +103,8 @@ namespace SimpleNPCStats2.Common
                     var skipLabel = cursor.DefineLabel();
                     cursor.EmitBrtrue(skipLabel);
 
-                    cursor.Index += 2;
+                    cursor.EmitLdarg0(); // Again for vanilla behaviour
+                    cursor.Index++;
 
                     cursor.MarkLabel(skipLabel);
                 }
@@ -104,6 +116,25 @@ namespace SimpleNPCStats2.Common
                 MonoModHooks.DumpIL(ModContent.GetInstance<SimpleNPCStats2>(), context);
             }
         }
+
+        /*
+        public static void On_Projectile_UpdatePosition(On_Projectile.orig_UpdatePosition orig, Projectile self, Vector2 wetVelocity)
+        {
+            if (self.TryGetGlobalProjectile<CustomizedNPCProjectile>(out var result) && result.Enabled)
+            {
+                self.velocity *= result.MovementSpeed;
+                wetVelocity *= result.MovementSpeed;
+
+                orig(self, wetVelocity);
+
+                self.velocity /= result.MovementSpeed;
+            }
+            else
+            {
+                orig(self, wetVelocity);
+            }
+        }
+        */
 
         public static void IL_Projectile_UpdatePosition(ILContext context)
         {
@@ -126,7 +157,7 @@ namespace SimpleNPCStats2.Common
                     cursor.EmitLdarg(0);
                     cursor.EmitDelegate((Projectile projectile) =>
                     {
-                        if (projectile.TryGetGlobalProjectile<CustomizedNPCProjectile>(out var result) && result.Enabled)
+                        if (projectile.TryGetGlobalProjectile<CustomizedNPCProjectile>(out var result) && result.Enabled && result.UseMovementSpeed)
                         {
                             return result.MovementSpeed;
                         }

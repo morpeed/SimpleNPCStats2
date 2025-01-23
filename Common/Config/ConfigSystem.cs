@@ -59,7 +59,22 @@ namespace SimpleNPCStats2.Common.Config
         public override ConfigScope Mode => ConfigScope.ServerSide;
         public static ConfigSystemAdvanced Instance { get; private set; }
 
-        [Header("MainHeader")]
+        [Header("ProjectileHeader")]
+
+        [DefaultValue(true)]
+        public bool projectileRelativeDamage;
+
+        [DefaultValue(true)]
+        public bool projectileRelativeScale;
+
+        [DefaultValue(true)]
+        public bool projectileUseMovementSpeed;
+
+        [DefaultValue(true)]
+        public bool projectileUseAISpeed;
+
+
+        [Header("MiscHeader")]
 
         [DefaultValue(true)]
         public bool overrideModifyAI;
