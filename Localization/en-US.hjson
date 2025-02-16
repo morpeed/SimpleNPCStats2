@@ -68,6 +68,7 @@ Mods: {
 		StatGravity: "[i:1131] Gravity [i:1131]"
 		StatRegen: "[i:49] Life Regeneration [i:49]"
 		StatKnockback: "[i:3258] Knockback Resist [i:3258]"
+		StatSpawnRate: "[i:300] Spawn Chance [i:300]"
 		StatTitle: Stat modifications
 		StatTutorial:
 			'''
@@ -172,6 +173,11 @@ Mods: {
 
 				regenLifeMaxPercent: {
 					Label: regen Life Max Percent
+					Tooltip: ""
+				}
+
+				spawnRateMultiplier: {
+					Label: spawn Rate Multiplier
 					Tooltip: ""
 				}
 			}

@@ -207,6 +207,9 @@ namespace SimpleNPCStats2.Common.Config.UI.NPCUI
 
                 CreateStatPanel(Language.GetTextValue(SNSHelper.LocalizationDirectory + "StatAISpeed"),
                     CreateStatElement(data.aiSpeed.multValue, (value) => data.aiSpeed.multValue = value, multText, new UIFloatSlider(1, 0, 4, 0.1f), new UIFloatField(1, min: 0, max: 100))),
+
+                //CreateStatPanel(Language.GetTextValue(SNSHelper.LocalizationDirectory + "StatSpawnRate"),
+                //    CreateStatElement(data.spawnRateMultiplier, (value) => data.spawnRateMultiplier = value, multText, new UIFloatSlider(1, 0, 10, 0.1f), new UIFloatField(1, min: 0, max: 10000))),
             ];
 
             elements[5].Width.Set(0, 0.5f);

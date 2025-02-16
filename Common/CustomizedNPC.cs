@@ -24,6 +24,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.IO;
 using Terraria.IO;
 using Newtonsoft.Json.Linq;
+using MonoMod.Utils;
 
 namespace SimpleNPCStats2.Common
 {
@@ -298,7 +299,7 @@ namespace SimpleNPCStats2.Common
                                 }
                                 else
                                 {
-                                    newRegen = (int)((result.Stats.regen.baseValue * result.Stats.regen.multValue) + result.Stats.regen.flatValue + (npc.lifeMax * result.Stats.regenLifeMaxPercent));
+                                    newRegen = (int)((npc.lifeRegen + result.Stats.regen.baseValue) * result.Stats.regen.multValue + result.Stats.regen.flatValue + (npc.lifeMax * result.Stats.regenLifeMaxPercent));
                                 }
 
                                 if (newRegen != npc.lifeRegen)
@@ -470,10 +471,19 @@ namespace SimpleNPCStats2.Common
 
         }
 
-        public override void EditSpawnPool(IDictionary<int, float> pool, NPCSpawnInfo spawnInfo)
-        {
-
-        }
+        //public override void EditSpawnPool(IDictionary<int, float> pool, NPCSpawnInfo spawnInfo)
+        //{
+        //    foreach (var key in pool.Keys)
+        //    {
+        //        Main.NewText(key);
+        //        if (ConfigSystem.SpawnRateModifiers.TryGetValue(key, out var value))
+        //        {
+        //            Main.NewText(pool[key]);
+        //            pool[key] *= value;
+        //            Main.NewText(pool[key]);
+        //        }
+        //    }
+        //}
 
         public override void ModifyHoverBoundingBox(NPC npc, ref Rectangle boundingBox)
         {

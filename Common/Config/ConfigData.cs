@@ -230,6 +230,7 @@ namespace SimpleNPCStats2.Common.Config
                 public Data<float> knockback;
 
                 public float regenLifeMaxPercent;
+                //public float spawnRateMultiplier;
 
                 public StatSet()
                 {
@@ -257,7 +258,8 @@ namespace SimpleNPCStats2.Common.Config
                         gravity = gravity,
                         regen = regen,
                         knockback = knockback,
-                        regenLifeMaxPercent = regenLifeMaxPercent
+                        regenLifeMaxPercent = regenLifeMaxPercent,
+                        //spawnRateMultiplier = spawnRateMultiplier
                     };
                 }
 
@@ -273,7 +275,8 @@ namespace SimpleNPCStats2.Common.Config
                     [nameof(gravity)] = gravity,
                     [nameof(regen)] = regen,
                     [nameof(knockback)] = knockback,
-                    [nameof(regenLifeMaxPercent)] = regenLifeMaxPercent
+                    [nameof(regenLifeMaxPercent)] = regenLifeMaxPercent,
+                    //[nameof(spawnRateMultiplier)] = spawnRateMultiplier
                 };
 
                 public static readonly Func<TagCompound, StatSet> DESERIALIZER = Load;
@@ -288,7 +291,8 @@ namespace SimpleNPCStats2.Common.Config
                     gravity = tag.Get<Data<float>>(nameof(gravity)),
                     regen = tag.Get<Data<int>>(nameof(regen)),
                     knockback = tag.Get<Data<float>>(nameof(knockback)),
-                    regenLifeMaxPercent = tag.Get<float>(nameof(regenLifeMaxPercent))
+                    regenLifeMaxPercent = tag.Get<float>(nameof(regenLifeMaxPercent)),
+                    //spawnRateMultiplier = tag.Get<float>(nameof(spawnRateMultiplier))
                 };
             }
         }

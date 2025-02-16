@@ -25,11 +25,15 @@ namespace SimpleNPCStats2.Common.Config
 
         public static ConfigData Data => Instance.data;
 
+        // netID / data
         public static Dictionary<int, ConfigData.NPCGroup.StatSet> StaticNPCData { get; private set; }
+        // netID / spawn rate multiplier
+        //public static Dictionary<int, float> SpawnRateModifiers { get; private set; }
 
         private void SaveStaticNPCData()
         {
             StaticNPCData = [];
+            //SpawnRateModifiers = [];
 
             var npcGroups = data.NPCGroups;
 
@@ -40,8 +44,12 @@ namespace SimpleNPCStats2.Common.Config
                 foreach (var netId in group.GetNPCs())
                 {
                     StaticNPCData[netId] = group.stats;
+                    //SpawnRateModifiers[netId] = group.stats.spawnRateMultiplier;
                 }
             }
+
+            // Remove redundant entries
+            //SpawnRateModifiers = SpawnRateModifiers.Where(spawnRate => spawnRate.Value != 1).ToDictionary(spawnRate => spawnRate.Key, spawnRate => spawnRate.Value);
 
             Mod.Logger.Debug($"Successfully saved {nameof(StaticNPCData)} with {StaticNPCData.Count} entries.");
         }

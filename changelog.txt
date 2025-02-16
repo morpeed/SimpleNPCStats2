@@ -1,8 +1,4 @@
-2.2.3
-
-Features
-- Added option to life regen to add flat regen based off of max hp
-- Added global settings to change how NPC projectiles should behave relative to it's owner
+2.2.4
 
 Fixes
-- Fixed AI speed not affecting projectiles
+- Fixed life regen modifications not taking the NPCs life regen into the equation
