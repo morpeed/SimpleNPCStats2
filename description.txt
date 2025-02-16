@@ -13,12 +13,9 @@ Includes modifying:
 [/list]
 
 [h1]IMPORTANT![/h1]
+This mod is experimental and is by no means perfect, generally should work fine but be weary of potential bugs and mod conflicts.
+
 Changes to config only take affect on newly spawned NPCs (or upon world reload).
-
-Extreme values can cause issues, so be cautious.
-
-This mod tries its best to override values but isn't perfect. Expect there to be bugs especially with other mods.
-There is little I can do without manually patching NPCs in every mod.
 
 [h1]F.A.Q.[/h1]
 [h3]How to use?[/h3]
@@ -28,7 +25,7 @@ Settings > Mod Configuration > Simple NPC Customizer > Config
 [h3]Does this mod work in multiplayer?[/h3]
 It should! But has not been extensively tested.
 
-If there are any bugs, crashes, or any features you'd like to recommend. Please go ahead :)
+If there are any bugs, crashes, or any features you'd like to recommend. Please go ahead and let me know :)
 
 GitHub:
 https://github.com/morpeed/SimpleNPCStats2
