@@ -89,7 +89,6 @@ namespace SimpleNPCStats2.Common
         public static void On_NPC_SetDefaults(On_NPC.orig_SetDefaults orig, NPC self, int Type, NPCSpawnParams spawnparams)
         {
             orig(self, Type, spawnparams);
-
             // Method returns early if Type < 0
             if (!Main.gameMenu && Type > 0 && !_fromNetID)
             {
@@ -516,20 +515,20 @@ namespace SimpleNPCStats2.Common
         public struct StatInfo
         {
             public int defDamage;
-            public int life;
+            public int lifeMax;
 
             public static StatInfo Create(NPC npc)
             {
                 return new StatInfo()
                 {
                     defDamage = npc.defDamage,
-                    life = npc.lifeMax
+                    lifeMax = npc.lifeMax
                 };
             }
 
             public override string ToString()
             {
-                return string.Join(',', defDamage, life);
+                return string.Join(',', defDamage, lifeMax);
             }
         }
 

@@ -1,4 +1,4 @@
-2.2.4
+2.2.5
 
 Fixes
-- Fixed life regen modifications not taking the NPCs life regen into the equation
+- NPC's with modified health should now keep their targetability status from minions and homing projectiles (not guaranteed to work with modded minions and projectiles)

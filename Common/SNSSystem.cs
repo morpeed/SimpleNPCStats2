@@ -34,9 +34,39 @@ namespace SimpleNPCStats2.Common
             //IL_NPC.AI_047_GolemFist += IL_NPC_AI_047_GolemFist;
             //IL_NPC.VanillaAI_Inner += IL_NPC_VanillaAI_Inner; // Too big, don't work, go see NPCOverrides
             //IL_NPC.AI_003_Fighters += IL_NPC_AI_003_Fighters;// Again, too big, don't work, go see NPCOverrides
+            IL_NPC.CanBeChasedBy += IL_NPC_CanBeChasedBy;
 
             IL_Projectile.Update += CustomizedNPCProjectile.IL_Projectile_Update;
             IL_Projectile.UpdatePosition += CustomizedNPCProjectile.IL_Projectile_UpdatePosition;
+        }
+
+        private void IL_NPC_CanBeChasedBy(ILContext context)
+        {
+            context.QuickILEdit((cursor) =>
+            {
+                if (cursor.TryGotoNext(
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<NPC>("lifeMax"),
+                    i => i.MatchLdcI4(5),
+                    i => i.MatchBle(out _)
+                    ))
+                {
+                    cursor.Index++;
+                    cursor.Remove(); // Remove loading lifeMax field
+
+                    cursor.EmitDelegate((NPC npc) =>
+                    {
+                        if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result) && result.Enabled)
+                        {
+                            return result.OldStatInfo.lifeMax;
+                        }
+                        else
+                        {
+                            return npc.lifeMax;
+                        }
+                    });
+                }
+            });
         }
 
         private static void MultiplyNPCByScale(ILCursor cursor)
@@ -77,7 +107,6 @@ namespace SimpleNPCStats2.Common
                     });
                     cursor.EmitMul();
                 }
-                MonoModHooks.DumpIL(ModContent.GetInstance<SimpleNPCStats2>(), context);
             }
             catch
             {
@@ -87,9 +116,8 @@ namespace SimpleNPCStats2.Common
 
         private static void IL_NPC_AI_002_FloatingEye(ILContext context)
         {
-            try
+            context.QuickILEdit((cursor) =>
             {
-                ILCursor cursor;
                 cursor = new ILCursor(context);
                 if (cursor.TryGotoNext(MoveType.After,
                          i => i.MatchLdloc3(),
@@ -115,11 +143,7 @@ namespace SimpleNPCStats2.Common
                         }
                     });
                 }
-            }
-            catch
-            {
-                MonoModHooks.DumpIL(ModContent.GetInstance<SimpleNPCStats2>(), context);
-            }
+            });
         }
         // Scales the distance between worm enemy segments accordingly
         private static void IL_NPC_AI_006_Worms(ILContext context)

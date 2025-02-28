@@ -290,5 +290,29 @@ namespace SimpleNPCStats2.Common
                 }
             }
         }
+
+        /// <summary>
+        /// Helper method to write il edits faster
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="action"></param>
+        public static void QuickILEdit(this ILContext context, Action<ILCursor> action)
+        {
+            ILCursor cursor = new ILCursor(context);
+
+            try
+            {
+                action?.Invoke(cursor);
+                cursor.UpdateInstructionOffsets();
+
+                #if DEBUG
+                MonoModHooks.DumpIL(ModContent.GetInstance<SimpleNPCStats2>(), context);
+                #endif
+            }
+            catch
+            {
+                MonoModHooks.DumpIL(ModContent.GetInstance<SimpleNPCStats2>(), context);
+            }
+        }
     }
 }
