@@ -166,50 +166,47 @@ namespace SimpleNPCStats2.Common.Config.UI.NPCUI
             List<UIElement> elements =
             [
                 CreateStatPanel(Language.GetTextValue(SNSHelper.LocalizationDirectory + "StatHealth"),
-                    CreateStatElement(data.life.baseValue, (value) => data.life.baseValue = value, baseText, new UIIntSlider(0, -500, 500, 10), new UIIntField()),
-                    CreateStatElement(data.life.multValue, (value) => data.life.multValue = value, multText, new UIFloatSlider(1, 0.01f, 10, 0.2f), new UIFloatField(1, min: 0.01f, max: 10000)),
-                    CreateStatElement(data.life.flatValue, (value) => data.life.flatValue = value, flatText, new UIIntSlider(0, -500, 500, 10), new UIIntField()),
-                    CreateStatElement(data.life.overrideValue, (value) => data.life.overrideValue = value, overrideText, new UIIntSlider(min:0, max:1000, rounding:10), new UIIntField())),
+                    CreateStatElement(data.lifeBase, (value) => data.lifeBase = value, baseText, new UIIntSlider(0, -500, 500, 10), new UIIntField()),
+                    CreateStatElement(data.lifeMultiplier, (value) => data.lifeMultiplier = value, multText, new UIFloatSlider(1, 0.01f, 10, 0.2f), new UIFloatField(1, min: 0.01f, max: 10000)),
+                    CreateStatElement(data.lifeFlat, (value) => data.lifeFlat = value, flatText, new UIIntSlider(0, -500, 500, 10), new UIIntField()),
+                    CreateStatElement(data.lifeOverride, (value) => data.lifeOverride = value, overrideText, new UIIntSlider(min:0, max:1000, rounding:10), new UIIntField())),
 
                 CreateStatPanel(Language.GetTextValue(SNSHelper.LocalizationDirectory + "StatDamage"),
-                    CreateStatElement(data.damage.baseValue, (value) => data.damage.baseValue = value, baseText, new UIIntSlider(0, -500, 500, 10), new UIIntField()),
-                    CreateStatElement(data.damage.multValue, (value) => data.damage.multValue = value, multText, new UIFloatSlider(1, 0, 10, 0.2f), new UIFloatField(1, min: 0, max: 10000)),
-                    CreateStatElement(data.damage.flatValue, (value) => data.damage.flatValue = value, flatText, new UIIntSlider(0, -500, 500, 10), new UIIntField()),
-                    CreateStatElement(data.damage.overrideValue, (value) => data.damage.overrideValue = value, overrideText, new UIIntSlider(min:0, max:1000, rounding:10), new UIIntField())),
+                    CreateStatElement(data.damageBase, (value) => data.damageBase = value, baseText, new UIIntSlider(0, -500, 500, 10), new UIIntField()),
+                    CreateStatElement(data.damageMultiplier, (value) => data.damageMultiplier = value, multText, new UIFloatSlider(1, 0, 10, 0.2f), new UIFloatField(1, min: 0, max: 10000)),
+                    CreateStatElement(data.damageFlat, (value) => data.damageFlat = value, flatText, new UIIntSlider(0, -500, 500, 10), new UIIntField()),
+                    CreateStatElement(data.damageOverride, (value) => data.damageOverride = value, overrideText, new UIIntSlider(min:0, max:1000, rounding:10), new UIIntField())),
 
                 CreateStatPanel(Language.GetTextValue(SNSHelper.LocalizationDirectory + "StatDefense"),
-                    CreateStatElement(data.defense.baseValue, (value) => data.defense.baseValue = value, baseText, new UIIntSlider(0, -200, 200, 2), new UIIntField()),
-                    CreateStatElement(data.defense.multValue, (value) => data.defense.multValue = value, multText, new UIFloatSlider(1, -5, 5, 0.2f), new UIFloatField(1, min: -10000, max: 10000)),
-                    CreateStatElement(data.defense.flatValue, (value) => data.defense.flatValue = value, flatText, new UIIntSlider(0, -200, 200, 2), new UIIntField()),
-                    CreateStatElement(data.defense.overrideValue, (value) => data.defense.overrideValue = value, overrideText, new UIIntSlider(min:-200, max:200, rounding:10), new UIIntField())),
+                    CreateStatElement(data.defenseBase, (value) => data.defenseBase = value, baseText, new UIIntSlider(0, -200, 200, 2), new UIIntField()),
+                    CreateStatElement(data.defenseMultiplier, (value) => data.defenseMultiplier = value, multText, new UIFloatSlider(1, -5, 5, 0.2f), new UIFloatField(1, min: -10000, max: 10000)),
+                    CreateStatElement(data.defenseFlat, (value) => data.defenseFlat = value, flatText, new UIIntSlider(0, -200, 200, 2), new UIIntField()),
+                    CreateStatElement(data.defenseOverride, (value) => data.defenseOverride = value, overrideText, new UIIntSlider(min:-200, max:200, rounding:10), new UIIntField())),
 
                 CreateStatPanel(Language.GetTextValue(SNSHelper.LocalizationDirectory + "StatRegen"),
-                    CreateStatElement(data.regen.baseValue, (value) => data.regen.baseValue = value, baseText, new UIIntSlider(0, -100, 100, 1), new UIIntField()),
-                    CreateStatElement(data.regen.multValue, (value) => data.regen.multValue = value, multText, new UIFloatSlider(1, -5, 5, 0.2f), new UIFloatField(1, min: 0, max: 10000)),
-                    CreateStatElement(data.regen.flatValue, (value) => data.regen.flatValue = value, flatText, new UIIntSlider(0, -100, 100, 1), new UIIntField()),
+                    CreateStatElement(data.regenBase, (value) => data.regenBase = value, baseText, new UIIntSlider(0, -100, 100, 1), new UIIntField()),
+                    CreateStatElement(data.regenMultiplier, (value) => data.regenMultiplier = value, multText, new UIFloatSlider(1, -5, 5, 0.2f), new UIFloatField(1, min: 0, max: 10000)),
+                    CreateStatElement(data.regenFlat, (value) => data.regenFlat = value, flatText, new UIIntSlider(0, -100, 100, 1), new UIIntField()),
                     CreateStatElement(data.regenLifeMaxPercent, (value) => data.regenLifeMaxPercent = value, Language.GetTextValue(SNSHelper.LocalizationDirectory + "StatRegenPercent"), new UIFloatSlider(0, -1, 1, 0.02f), new UIFloatField()),
-                    CreateStatElement(data.regen.overrideValue, (value) => data.regen.overrideValue = value, overrideText, new UIIntSlider(min:-100, max:100, rounding:1), new UIIntField())),
+                    CreateStatElement(data.regenOverride, (value) => data.regenOverride = value, overrideText, new UIIntSlider(min:-100, max:100, rounding:1), new UIIntField())),
 
                 CreateStatPanel(Language.GetTextValue(SNSHelper.LocalizationDirectory + "StatKnockback"),
-                    CreateStatElement(data.knockback.baseValue, (value) => data.knockback.baseValue = value, baseText, new UIFloatSlider(0, 0, 4, 0.1f), new UIFloatField(min: 0, max: 10000)),
-                    CreateStatElement(data.knockback.multValue, (value) => data.knockback.multValue = value, multText, new UIFloatSlider(1, 0, 10, 0.2f), new UIFloatField(1, min: 0, max: 1000)),
-                    CreateStatElement(data.knockback.flatValue, (value) => data.knockback.flatValue = value, flatText, new UIFloatSlider(0, 0, 4, 0.1f), new UIFloatField(min: 0, max: 10000)),
-                    CreateStatElement(data.knockback.overrideValue, (value) => data.knockback.overrideValue = value, overrideText, new UIFloatSlider(min:0, max:4, rounding:0.1f), new UIFloatField(min:0, max: 10000))),
+                    CreateStatElement(data.knockbackBase, (value) => data.knockbackBase = value, baseText, new UIFloatSlider(0, -1, 2, 0.1f), new UIFloatField(min: -1000, max: 1000)),
+                    CreateStatElement(data.knockbackMultiplier, (value) => data.knockbackMultiplier = value, multText, new UIFloatSlider(1, 0, 10, 0.2f), new UIFloatField(1, min: 0, max: 1000)),
+                    CreateStatElement(data.knockbackFlat, (value) => data.knockbackFlat = value, flatText, new UIFloatSlider(0, -1, 2, 0.1f), new UIFloatField(min: -1000, max: 1000)),
+                    CreateStatElement(data.knockbackOverride, (value) => data.knockbackOverride = value, overrideText, new UIFloatSlider(min:0, max:4, rounding:0.1f), new UIFloatField(min:0, max: 1000))),
 
                 CreateStatPanel(Language.GetTextValue(SNSHelper.LocalizationDirectory + "StatSize"),
-                    CreateStatElement(data.scale.multValue, (value) => data.scale.multValue = value, multText, new UIFloatSlider(1, 0.01f, 2, 0.05f), new UIFloatField(1, min: 0.01f, max: 100))),
+                    CreateStatElement(data.scaleMultiplier, (value) => data.scaleMultiplier = value, multText, new UIFloatSlider(1, 0.01f, 2, 0.05f), new UIFloatField(1, min: 0.01f, max: 100))),
 
                     CreateStatPanel(Language.GetTextValue(SNSHelper.LocalizationDirectory + "StatGravity"),
-                    CreateStatElement(data.gravity.multValue, (value) => data.gravity.multValue = value, multText, new UIFloatSlider(1, -2, 2, 0.05f), new UIFloatField(1, min: -100, max: 100))),
+                    CreateStatElement(data.gravityMultiplier, (value) => data.gravityMultiplier = value, multText, new UIFloatSlider(1, -2, 2, 0.05f), new UIFloatField(1, min: -100, max: 100))),
 
                 CreateStatPanel(Language.GetTextValue(SNSHelper.LocalizationDirectory + "StatMovement"),
-                    CreateStatElement(data.movement.multValue, (value) => data.movement.multValue = value, multText, new UIFloatSlider(1, -2, 2, 0.1f), new UIFloatField(1, min: -100, max: 100))),
+                    CreateStatElement(data.movementMultiplier, (value) => data.movementMultiplier = value, multText, new UIFloatSlider(1, -2, 2, 0.1f), new UIFloatField(1, min: -100, max: 100))),
 
                 CreateStatPanel(Language.GetTextValue(SNSHelper.LocalizationDirectory + "StatAISpeed"),
-                    CreateStatElement(data.aiSpeed.multValue, (value) => data.aiSpeed.multValue = value, multText, new UIFloatSlider(1, 0, 4, 0.1f), new UIFloatField(1, min: 0, max: 100))),
-
-                //CreateStatPanel(Language.GetTextValue(SNSHelper.LocalizationDirectory + "StatSpawnRate"),
-                //    CreateStatElement(data.spawnRateMultiplier, (value) => data.spawnRateMultiplier = value, multText, new UIFloatSlider(1, 0, 10, 0.1f), new UIFloatField(1, min: 0, max: 10000))),
+                    CreateStatElement(data.aiSpeedMultiplier, (value) => data.aiSpeedMultiplier = value, multText, new UIFloatSlider(1, 0, 4, 0.1f), new UIFloatField(1, min: 0, max: 100))),
             ];
 
             elements[5].Width.Set(0, 0.5f);

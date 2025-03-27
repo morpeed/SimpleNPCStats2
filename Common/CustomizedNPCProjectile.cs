@@ -57,15 +57,15 @@ namespace SimpleNPCStats2.Common
                         projectile.height = Math.Max(1, (int)(projectile.height * Scale));
                     }
 
-                    if (ConfigSystemAdvanced.Instance.projectileRelativeDamage && result.OldStatInfo.defDamage != 0) // Unknown what to do if there's an increase from 0, so do nothing
+                    if (ConfigSystemAdvanced.Instance.projectileRelativeDamage && result.oldStatInfo.defDamage != 0) // Unknown what to do if there's an increase from 0, so do nothing
                     {
-                        if (result.NewStatInfo.defDamage == 0) // Clamp damage to 0-1 if damage is decreased to 0
+                        if (result.newStatInfo.defDamage == 0) // Clamp damage to 0-1 if damage is decreased to 0
                         {
                             projectile.damage = Math.Min(projectile.damage, 1);
                         }
                         else
                         {
-                            projectile.damage = Math.Max(0, (int)(projectile.damage * ((float)result.NewStatInfo.defDamage / result.OldStatInfo.defDamage)));
+                            projectile.damage = Math.Max(0, (int)(projectile.damage * ((float)result.newStatInfo.defDamage / result.oldStatInfo.defDamage)));
                         }
                     }
                 }

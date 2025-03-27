@@ -1,4 +1,10 @@
-2.2.5
+2.2.6
+
+Features
+- Knockback can now be decreased with base and flat
 
 Fixes
-- NPC's with modified health should now keep their targetability status from minions and homing projectiles (not guaranteed to work with modded minions and projectiles)
+- Fixed issues related to NPCs not syncing properly on the client when joining a server
+
+Misc
+- Reworded "Knockback Resist" to "Knockback Taken" to make it clear that increasing the value increases the knockback

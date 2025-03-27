@@ -17,6 +17,8 @@ using System.Diagnostics;
 using System.Runtime.Serialization;
 using System.Globalization;
 using Terraria.ModLoader.IO;
+using System.IO;
+using Stubble.Core.Classes;
 
 namespace SimpleNPCStats2.Common.Config
 {
@@ -162,6 +164,7 @@ namespace SimpleNPCStats2.Common.Config
 
             public class StatSet : TagSerializable
             {
+                [Obsolete]
                 public struct Data<T> : TagSerializable where T : IConvertible
                 {
                     public T baseValue;
@@ -218,7 +221,6 @@ namespace SimpleNPCStats2.Common.Config
                         overrideValue = tag.Get<T>(nameof(overrideValue))
                     };
                 }
-
                 public Data<int> life;
                 public Data<int> damage;
                 public Data<int> defense;
@@ -228,72 +230,477 @@ namespace SimpleNPCStats2.Common.Config
                 public Data<float> gravity;
                 public Data<int> regen;
                 public Data<float> knockback;
-
-                public float regenLifeMaxPercent;
-                //public float spawnRateMultiplier;
-
-                public StatSet()
+                //public float regenLifeMaxPercent;
+                [OnDeserialized]
+                private void OnDeserialized(StreamingContext context)
                 {
-                    life = new();
-                    damage = new();
-                    defense = new();
-                    scale = new();
-                    movement = new();
-                    aiSpeed = new();
-                    gravity = new();
-                    regen = new();
-                    knockback = new();
+                    static bool IsDefault<T>(Data<T> data) where T : IConvertible
+                    {
+                        return Convert.ToSingle(data.baseValue) == 0 && Convert.ToSingle(data.multValue) == 0 & Convert.ToSingle(data.flatValue) == 0 && Convert.ToSingle(data.overrideValue) == 0;
+                    }
+                    
+                    if (!IsDefault(life))
+                    {
+                        lifeBase = life.baseValue;
+                        lifeMultiplier = life.multValue;
+                        lifeFlat = life.flatValue;
+                        lifeOverride = life.overrideValue;
+                    }
+                    if (!IsDefault(damage))
+                    {
+                        damageBase = damage.baseValue;
+                        damageMultiplier = damage.multValue;
+                        damageFlat = damage.flatValue;
+                        damageOverride = damage.overrideValue;
+                    }
+                    if (!IsDefault(defense))
+                    {
+                        defenseBase = defense.baseValue;
+                        defenseMultiplier = defense.multValue;
+                        defenseFlat = defense.flatValue;
+                        defenseOverride = defense.overrideValue;
+                    }
+                    if (!IsDefault(scale))
+                    {
+                        scaleMultiplier = scale.multValue;
+                    }
+                    if (!IsDefault(movement))
+                    {
+                        movementMultiplier = movement.multValue;
+                    }
+                    if (!IsDefault(aiSpeed))
+                    {
+                        aiSpeedMultiplier = aiSpeed.multValue;
+                    }
+                    if (!IsDefault(gravity))
+                    {
+                        gravityMultiplier = gravity.multValue;
+                    }
+                    if (!IsDefault(regen))
+                    {
+                        regenBase = regen.baseValue;
+                        regenMultiplier = regen.multValue;
+                        regenFlat = regen.flatValue;
+                        regenOverride = regen.overrideValue;
+                    }
+                    if (!IsDefault(knockback))
+                    {
+                        knockbackBase = knockback.baseValue;
+                        knockbackMultiplier = knockback.multValue;
+                        knockbackFlat = knockback.flatValue;
+                        knockbackOverride = knockback.overrideValue;
+                    }
+                }
+                [OnSerializing]
+                private void OnSerializing(StreamingContext context)
+                {
+                    life = default;
+                    damage = default;
+                    defense = default;
+                    scale = default;
+                    movement = default;
+                    aiSpeed = default;
+                    gravity = default;
+                    regen = default;
+                    knockback = default;
+                }
+
+                // These have been remade for simplicity's sake if modifications are needed to a specific stat in the future. Makes this class a lot more verbose though.
+                #region Life
+                public int lifeBase;
+                public float lifeMultiplier = 1f;
+                public int lifeFlat;
+                public int lifeOverride;
+                public int GetLifeValue(int life) => lifeOverride != 0 ? lifeOverride : (int)(((life + lifeBase) * lifeMultiplier) + lifeFlat);
+                #endregion
+
+                #region Damage
+                public int damageBase;
+                public float damageMultiplier = 1f;
+                public int damageFlat;
+                public int damageOverride;
+                public int GetDamageValue(int damage) => damageOverride != 0 ? damageOverride : (int)(((damage + damageBase) * damageMultiplier) + damageFlat);
+                #endregion
+
+                #region Defense
+                public int defenseBase;
+                public float defenseMultiplier = 1f;
+                public int defenseFlat;
+                public int defenseOverride;
+                public int GetDefenseValue(int defense) => defenseOverride != 0 ? defenseOverride : (int)(((defense + defenseBase) * defenseMultiplier) + defenseFlat);
+                #endregion
+
+                #region Scale
+                public float scaleMultiplier = 1f;
+                public float GetScaleValue() => scaleMultiplier;
+                #endregion
+
+                #region Movement
+                public float movementMultiplier = 1f;
+                public float GetMovementValue() => movementMultiplier;
+                #endregion
+
+                #region AISpeed
+                public float aiSpeedMultiplier = 1f;
+                public float GetAISpeedValue() => aiSpeedMultiplier;
+                #endregion
+
+                #region Gravity
+                public float gravityMultiplier = 1f;
+                public float GetGravityValue() => gravityMultiplier;
+                #endregion
+
+                #region Regen
+                public int regenBase;
+                public float regenMultiplier = 1f;
+                public int regenFlat;
+                public int regenOverride;
+                public float regenLifeMaxPercent;
+                public int GetRegenValue(int regen, int lifeMax) => regenOverride != 0 ? regenOverride : (int)(((regen + regenBase) * regenMultiplier) + regenFlat + (lifeMax * regenLifeMaxPercent));
+                #endregion
+
+                #region Knockback
+                public float knockbackBase;
+                public float knockbackMultiplier = 1f;
+                public float knockbackFlat;
+                public float knockbackOverride;
+                public float GetKnockbackValue(float knockback) => knockbackOverride != 0 ? knockbackOverride : ((knockback + knockbackBase) * knockbackMultiplier) + knockbackFlat;
+                #endregion
+
+                public override bool Equals(object obj)
+                {
+                    if (obj is StatSet other)
+                    {
+                        return lifeBase == other.lifeBase &&
+                               lifeMultiplier == other.lifeMultiplier &&
+                               lifeFlat == other.lifeFlat &&
+                               lifeOverride == other.lifeOverride &&
+
+                               damageBase == other.damageBase &&
+                               damageMultiplier == other.damageMultiplier &&
+                               damageFlat == other.damageFlat &&
+                               damageOverride == other.damageOverride &&
+
+                               defenseBase == other.defenseBase &&
+                               defenseMultiplier == other.defenseMultiplier &&
+                               defenseFlat == other.defenseFlat &&
+                               defenseOverride == other.defenseOverride &&
+
+                               scaleMultiplier == other.scaleMultiplier &&
+
+                               movementMultiplier == other.movementMultiplier &&
+
+                               aiSpeedMultiplier == other.aiSpeedMultiplier &&
+
+                               gravityMultiplier == other.gravityMultiplier &&
+
+                               regenBase == other.regenBase &&
+                               regenMultiplier == other.regenMultiplier &&
+                               regenFlat == other.regenFlat &&
+                               regenOverride == other.regenOverride &&
+                               regenLifeMaxPercent == other.regenLifeMaxPercent &&
+
+                               knockbackBase == other.knockbackBase &&
+                               knockbackMultiplier == other.knockbackMultiplier &&
+                               knockbackFlat == other.knockbackFlat &&
+                               knockbackOverride == other.knockbackOverride;
+                    }
+                    return false;
+                }
+
+
+                public void Write(BinaryWriter writer)
+                {
+                    writer.Write(lifeBase);
+                    writer.Write(lifeMultiplier);
+                    writer.Write(lifeFlat);
+                    writer.Write(lifeOverride);
+
+                    writer.Write(damageBase);
+                    writer.Write(damageMultiplier);
+                    writer.Write(damageFlat);
+                    writer.Write(damageOverride);
+
+                    writer.Write(defenseBase);
+                    writer.Write(defenseMultiplier);
+                    writer.Write(defenseFlat);
+                    writer.Write(defenseOverride);
+
+                    writer.Write(scaleMultiplier);
+
+                    writer.Write(movementMultiplier);
+
+                    writer.Write(aiSpeedMultiplier);
+
+                    writer.Write(gravityMultiplier);
+
+                    writer.Write(regenBase);
+                    writer.Write(regenMultiplier);
+                    writer.Write(regenFlat);
+                    writer.Write(regenOverride);
+                    writer.Write(regenLifeMaxPercent);
+
+                    writer.Write(knockbackBase);
+                    writer.Write(knockbackMultiplier);
+                    writer.Write(knockbackFlat);
+                    writer.Write(knockbackOverride);
+                }
+                public static StatSet Read(BinaryReader reader)
+                {
+                    return new StatSet()
+                    {
+                        lifeBase = reader.ReadInt32(),
+                        lifeMultiplier = reader.ReadSingle(),
+                        lifeFlat = reader.ReadInt32(),
+                        lifeOverride = reader.ReadInt32(),
+
+                        damageBase = reader.ReadInt32(),
+                        damageMultiplier = reader.ReadSingle(),
+                        damageFlat = reader.ReadInt32(),
+                        damageOverride = reader.ReadInt32(),
+
+                        defenseBase = reader.ReadInt32(),
+                        defenseMultiplier = reader.ReadSingle(),
+                        defenseFlat = reader.ReadInt32(),
+                        defenseOverride = reader.ReadInt32(),
+
+                        scaleMultiplier = reader.ReadSingle(),
+
+                        movementMultiplier = reader.ReadSingle(),
+
+                        aiSpeedMultiplier = reader.ReadSingle(),
+
+                        gravityMultiplier = reader.ReadSingle(),
+
+                        regenBase = reader.ReadInt32(),
+                        regenMultiplier = reader.ReadSingle(),
+                        regenFlat = reader.ReadInt32(),
+                        regenOverride = reader.ReadInt32(),
+                        regenLifeMaxPercent = reader.ReadSingle(),
+
+                        knockbackBase = reader.ReadSingle(),
+                        knockbackMultiplier = reader.ReadSingle(),
+                        knockbackFlat = reader.ReadSingle(),
+                        knockbackOverride = reader.ReadSingle()
+                    };
+                }
+
+                public override int GetHashCode()
+                {
+                    HashCode hash = new HashCode();
+                    hash.Add(lifeBase);
+                    hash.Add(lifeMultiplier);
+                    hash.Add(lifeFlat);
+                    hash.Add(lifeOverride);
+
+                    hash.Add(damageBase);
+                    hash.Add(damageMultiplier);
+                    hash.Add(damageFlat);
+                    hash.Add(damageOverride);
+
+                    hash.Add(defenseBase);
+                    hash.Add(defenseMultiplier);
+                    hash.Add(defenseFlat);
+                    hash.Add(defenseOverride);
+
+                    hash.Add(scaleMultiplier);
+                    hash.Add(movementMultiplier);
+                    hash.Add(aiSpeedMultiplier);
+                    hash.Add(gravityMultiplier);
+
+                    hash.Add(regenBase);
+                    hash.Add(regenMultiplier);
+                    hash.Add(regenFlat);
+                    hash.Add(regenOverride);
+                    hash.Add(regenLifeMaxPercent);
+
+                    hash.Add(knockbackBase);
+                    hash.Add(knockbackMultiplier);
+                    hash.Add(knockbackFlat);
+                    hash.Add(knockbackOverride);
+
+                    return hash.ToHashCode();
                 }
 
                 public StatSet Clone()
                 {
                     return new StatSet()
                     {
-                        life = life,
-                        damage = damage,
-                        defense = defense,
-                        scale = scale,
-                        movement = movement,
-                        aiSpeed = aiSpeed,
-                        gravity = gravity,
-                        regen = regen,
-                        knockback = knockback,
+                        lifeBase = lifeBase,
+                        lifeMultiplier = lifeMultiplier,
+                        lifeFlat = lifeFlat,
+                        lifeOverride = lifeOverride,
+
+                        damageBase = damageBase,
+                        damageMultiplier = damageMultiplier,
+                        damageFlat = damageFlat,
+                        damageOverride = damageOverride,
+
+                        defenseBase = defenseBase,
+                        defenseMultiplier = defenseMultiplier,
+                        defenseFlat = defenseFlat,
+                        defenseOverride = defenseOverride,
+
+                        scaleMultiplier = scaleMultiplier,
+
+                        movementMultiplier = movementMultiplier,
+
+                        aiSpeedMultiplier = aiSpeedMultiplier,
+
+                        gravityMultiplier = gravityMultiplier,
+
+                        regenBase = regenBase,
+                        regenMultiplier = regenMultiplier,
+                        regenFlat = regenFlat,
                         regenLifeMaxPercent = regenLifeMaxPercent,
-                        //spawnRateMultiplier = spawnRateMultiplier
+                        regenOverride = regenOverride,
+
+                        knockbackBase = knockbackBase,
+                        knockbackMultiplier = knockbackMultiplier,
+                        knockbackFlat = knockbackFlat,
+                        knockbackOverride = knockbackOverride
                     };
                 }
 
                 // TagSerializable
-                public TagCompound SerializeData() => new TagCompound
+                public TagCompound SerializeData()
                 {
-                    [nameof(life)] = life,
-                    [nameof(damage)] = damage,
-                    [nameof(defense)] = defense,
-                    [nameof(scale)] = scale,
-                    [nameof(movement)] = movement,
-                    [nameof(aiSpeed)] = aiSpeed,
-                    [nameof(gravity)] = gravity,
-                    [nameof(regen)] = regen,
-                    [nameof(knockback)] = knockback,
-                    [nameof(regenLifeMaxPercent)] = regenLifeMaxPercent,
-                    //[nameof(spawnRateMultiplier)] = spawnRateMultiplier
-                };
+                    var tag = new TagCompound()
+                    {
+                        [nameof(lifeBase)] = lifeBase,
+                        [nameof(lifeMultiplier)] = lifeMultiplier,
+                        [nameof(lifeFlat)] = lifeFlat,
+                        [nameof(lifeOverride)] = lifeOverride,
+
+                        [nameof(damageBase)] = damageBase,
+                        [nameof(damageMultiplier)] = damageMultiplier,
+                        [nameof(damageFlat)] = damageFlat,
+                        [nameof(damageOverride)] = damageOverride,
+
+                        [nameof(defenseBase)] = defenseBase,
+                        [nameof(defenseMultiplier)] = defenseMultiplier,
+                        [nameof(defenseFlat)] = defenseFlat,
+                        [nameof(defenseOverride)] = defenseOverride,
+
+                        [nameof(scaleMultiplier)] = scaleMultiplier,
+
+                        [nameof(movementMultiplier)] = movementMultiplier,
+
+                        [nameof(aiSpeedMultiplier)] = aiSpeedMultiplier,
+
+                        [nameof(gravityMultiplier)] = gravityMultiplier,
+
+                        [nameof(regenBase)] = regenBase,
+                        [nameof(regenMultiplier)] = regenMultiplier,
+                        [nameof(regenFlat)] = regenFlat,
+                        [nameof(regenLifeMaxPercent)] = regenLifeMaxPercent,
+                        [nameof(regenOverride)] = regenOverride,
+
+                        [nameof(knockbackBase)] = knockbackBase,
+                        [nameof(knockbackMultiplier)] = knockbackMultiplier,
+                        [nameof(knockbackFlat)] = knockbackFlat,
+                        [nameof(knockbackOverride)] = knockbackOverride
+                    };
+
+                    return tag;
+                }
 
                 public static readonly Func<TagCompound, StatSet> DESERIALIZER = Load;
-                public static StatSet Load(TagCompound tag) => new StatSet
+                public static StatSet Load(TagCompound tag)
                 {
-                    life = tag.Get<Data<int>>(nameof(life)),
-                    damage = tag.Get<Data<int>>(nameof(damage)),
-                    defense = tag.Get<Data<int>>(nameof(defense)),
-                    scale = tag.Get<Data<float>>(nameof(scale)),
-                    movement = tag.Get<Data<float>>(nameof(movement)),
-                    aiSpeed = tag.Get<Data<float>>(nameof(aiSpeed)),
-                    gravity = tag.Get<Data<float>>(nameof(gravity)),
-                    regen = tag.Get<Data<int>>(nameof(regen)),
-                    knockback = tag.Get<Data<float>>(nameof(knockback)),
-                    regenLifeMaxPercent = tag.Get<float>(nameof(regenLifeMaxPercent)),
-                    //spawnRateMultiplier = tag.Get<float>(nameof(spawnRateMultiplier))
-                };
+                    var statSet = new StatSet()
+                    {
+                        lifeBase = tag.Get<int>(nameof(lifeBase)),
+                        lifeMultiplier = tag.Get<float>(nameof(lifeMultiplier)),
+                        lifeFlat = tag.Get<int>(nameof(lifeFlat)),
+                        lifeOverride = tag.Get<int>(nameof(lifeOverride)),
+
+                        damageBase = tag.Get<int>(nameof(damageBase)),
+                        damageMultiplier = tag.Get<float>(nameof(damageMultiplier)),
+                        damageFlat = tag.Get<int>(nameof(damageFlat)),
+                        damageOverride = tag.Get<int>(nameof(damageOverride)),
+
+                        defenseBase = tag.Get<int>(nameof(defenseBase)),
+                        defenseMultiplier = tag.Get<float>(nameof(defenseMultiplier)),
+                        defenseFlat = tag.Get<int>(nameof(defenseFlat)),
+                        defenseOverride = tag.Get<int>(nameof(defenseOverride)),
+
+                        scaleMultiplier = tag.Get<float>(nameof(scaleMultiplier)),
+
+                        movementMultiplier = tag.Get<float>(nameof(movementMultiplier)),
+
+                        aiSpeedMultiplier = tag.Get<float>(nameof(aiSpeedMultiplier)),
+
+                        gravityMultiplier = tag.Get<float>(nameof(gravityMultiplier)),
+
+                        regenBase = tag.Get<int>(nameof(regenBase)),
+                        regenMultiplier = tag.Get<float>(nameof(regenMultiplier)),
+                        regenFlat = tag.Get<int>(nameof(regenFlat)),
+                        regenLifeMaxPercent = tag.Get<float>(nameof(regenLifeMaxPercent)),
+                        regenOverride = tag.Get<int>(nameof(regenOverride)),
+
+                        knockbackBase = tag.Get<float>(nameof(knockbackBase)),
+                        knockbackMultiplier = tag.Get<float>(nameof(knockbackMultiplier)),
+                        knockbackFlat = tag.Get<float>(nameof(knockbackFlat)),
+                        knockbackOverride = tag.Get<float>(nameof(knockbackOverride))
+                    };
+
+                    if (tag.TryGet<Data<int>>("life", out var life))
+                    {
+                        statSet.lifeBase = life.baseValue;
+                        statSet.lifeMultiplier = life.multValue;
+                        statSet.lifeFlat = life.flatValue;
+                        statSet.lifeOverride = life.overrideValue;
+                        tag.Remove("life");
+                    }
+                    if (tag.TryGet<Data<int>>("damage", out var damage))
+                    {
+                        statSet.damageBase = damage.baseValue;
+                        statSet.damageMultiplier = damage.multValue;
+                        statSet.damageFlat = damage.flatValue;
+                        statSet.damageOverride = damage.overrideValue;
+                    }
+                    if (tag.TryGet<Data<int>>("defense", out var defense))
+                    {
+                        statSet.defenseBase = defense.baseValue;
+                        statSet.defenseMultiplier = defense.multValue;
+                        statSet.defenseFlat = defense.flatValue;
+                        statSet.defenseOverride = defense.overrideValue;
+                    }
+                    if (tag.TryGet<Data<float>>("scale", out var scale))
+                    {
+                        statSet.scaleMultiplier = scale.multValue;
+                    }
+                    if (tag.TryGet<Data<float>>("movement", out var movement))
+                    {
+                        statSet.movementMultiplier = movement.multValue;
+                    }
+                    if (tag.TryGet<Data<float>>("aiSpeed", out var aiSpeed))
+                    {
+                        statSet.aiSpeedMultiplier = aiSpeed.multValue;
+                    }
+                    if (tag.TryGet<Data<float>>("gravity", out var gravity))
+                    {
+                        statSet.gravityMultiplier = gravity.multValue;
+                    }
+                    if (tag.TryGet<Data<int>>("regen", out var regen))
+                    {
+                        statSet.regenBase = regen.baseValue;
+                        statSet.regenMultiplier = regen.multValue;
+                        statSet.regenFlat = regen.flatValue;
+                        statSet.regenOverride = regen.overrideValue;
+                        // regenLifeMaxPercent has had no modifications to it so it's fine
+                    }
+                    if (tag.TryGet<Data<float>>("knockback", out var knockback))
+                    {
+                        statSet.knockbackBase = knockback.baseValue;
+                        statSet.knockbackMultiplier = knockback.multValue;
+                        statSet.knockbackFlat = knockback.flatValue;
+                        statSet.knockbackOverride = knockback.overrideValue;
+                    }
+
+                    return statSet;
+                }
             }
         }
     }

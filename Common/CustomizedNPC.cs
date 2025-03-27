@@ -25,6 +25,7 @@ using System.IO;
 using Terraria.IO;
 using Newtonsoft.Json.Linq;
 using MonoMod.Utils;
+using Terraria.Net;
 
 namespace SimpleNPCStats2.Common
 {
@@ -37,11 +38,10 @@ namespace SimpleNPCStats2.Common
 
         public bool Enabled => Stats != null;
         public ConfigData.NPCGroup.StatSet Stats { get; private set; }
-
-        public float MovementSpeed { get; private set; } = 1f;
-        public float Gravity { get; private set; } = 1f;
-        public float Scale { get; private set; } = 1f;
-        public float AISpeed { get; private set; } = 1f;
+        public float MovementSpeed { get; private set; }
+        public float Gravity { get; private set; }
+        public float Scale { get; private set; }
+        public float AISpeed { get; private set; }
         public float AISpeedCounter { get; private set; }
         public bool OverrideModifyAI { get; private set; }
         public int TypeNetID { get; private set; }
@@ -73,7 +73,6 @@ namespace SimpleNPCStats2.Common
             _fromNetID = true;
             orig(self, id, spawnparams);
             _fromNetID = false;
-
             if (!Main.gameMenu)
             {
                 if (self.TryGetGlobalNPC<CustomizedNPC>(out var result))
@@ -102,6 +101,7 @@ namespace SimpleNPCStats2.Common
                 }
             }
         }
+
         public bool Setup(NPC npc, ConfigData.NPCGroup.StatSet stats = null)
         {
             if (stats == null)
@@ -121,25 +121,25 @@ namespace SimpleNPCStats2.Common
                 Stats = stats;
             }
 
-            OldStatInfo = StatInfo.Create(npc);
+            oldStatInfo = StatInfo.Create(npc);
 
-            Gravity = Stats.gravity.GetValue(1);
-            AISpeed = Stats.aiSpeed.GetValue(1);
+            Gravity = Stats.GetGravityValue();
+            AISpeed = Stats.GetAISpeedValue();
             AISpeedCounter = 1;
-            MovementSpeed = Stats.movement.GetValue(1);
+            MovementSpeed = Stats.GetMovementValue();
             _useMovementSpeed = !NoMovementSpeedNPCIDs.Contains(TypeNetID);
 
-            npc.lifeMax = Math.Max(1, (int)Stats.life.GetValue(npc.lifeMax));
+            npc.lifeMax = Math.Max(0, Stats.GetLifeValue(npc.lifeMax));
             npc.life = npc.lifeMax;
 
-            npc.defDefense = (int)Stats.defense.GetValue(npc.defDefense);
-            npc.defense = npc.defDefense;
-
-            npc.defDamage = (int)Math.Max(0, Stats.damage.GetValue(npc.defDamage));
+            npc.defDamage = Math.Max(0, Stats.GetDamageValue(npc.defDamage));
             npc.damage = npc.defDamage;
 
+            npc.defDefense = Stats.GetDefenseValue(npc.defDefense);
+            npc.defense = npc.defDefense;
+
             var oldScale = npc.scale;
-            npc.scale *= Stats.scale.GetValue(1);
+            npc.scale *= Stats.GetScaleValue();
             if (ScaleClampNPCIDs.TryGetValue(TypeNetID, out var scaleClampValue))
             {
                 if (scaleClampValue.minScale != null && npc.scale < scaleClampValue.minScale)
@@ -155,13 +155,61 @@ namespace SimpleNPCStats2.Common
             npc.width = Math.Max(1, (int)(npc.width * Scale));
             npc.height = Math.Max(1, (int)(npc.height * Scale));
 
-            npc.knockBackResist = Stats.knockback.GetValue(npc.knockBackResist);
+            npc.knockBackResist = Math.Max(0, this.Stats.GetKnockbackValue(npc.knockBackResist));
 
             OverrideModifyAI = ConfigSystemAdvanced.Instance.overrideModifyAI;
 
-            NewStatInfo = StatInfo.Create(npc);
+            newStatInfo = StatInfo.Create(npc);
 
             return true;
+        }
+        public void Write(NPC npc, BinaryWriter writer)
+        {
+            Stats.Write(writer);
+            writer.Write(oldStatInfo.lifeMax);
+            writer.Write(oldStatInfo.defDamage);
+            writer.Write(newStatInfo.lifeMax);
+            writer.Write(newStatInfo.defDamage);
+            writer.Write(Gravity);
+            writer.Write(AISpeed);
+            writer.Write(MovementSpeed);
+            writer.Write(Scale);
+            writer.Write(OverrideModifyAI);
+            writer.Write(npc.lifeMax);
+            writer.Write(npc.life);
+            writer.Write(npc.defDamage);
+            writer.Write(npc.damage);
+            writer.Write(npc.defDefense);
+            writer.Write(npc.defense);
+            writer.Write(npc.scale);
+            writer.Write(npc.width);
+            writer.Write(npc.height);
+            writer.Write(npc.knockBackResist);
+        }
+        public void Read(NPC npc, BinaryReader reader)
+        {
+            Stats = ConfigData.NPCGroup.StatSet.Read(reader);
+            oldStatInfo.lifeMax = reader.ReadInt32();
+            oldStatInfo.defDamage = reader.ReadInt32();
+            newStatInfo.lifeMax = reader.ReadInt32();
+            newStatInfo.defDamage = reader.ReadInt32();
+            Gravity = reader.ReadSingle();
+            AISpeed = reader.ReadSingle();
+            MovementSpeed = reader.ReadSingle();
+            Scale = reader.ReadSingle();
+            OverrideModifyAI = reader.ReadBoolean();
+            npc.lifeMax = reader.ReadInt32();
+            npc.life = reader.ReadInt32();
+            npc.defDamage = reader.ReadInt32();
+            npc.damage = reader.ReadInt32();
+            npc.defDefense = reader.ReadInt32();
+            npc.defense = reader.ReadInt32();
+            npc.scale = reader.ReadSingle();
+            npc.width = reader.ReadInt32();
+            npc.height = reader.ReadInt32();
+            npc.knockBackResist = reader.ReadSingle();
+
+            _useMovementSpeed = !NoMovementSpeedNPCIDs.Contains(TypeNetID);
         }
 
         // AI Speed && Movement Speed
@@ -291,15 +339,7 @@ namespace SimpleNPCStats2.Common
                         {
                             if (result.Enabled && result.AISpeed > 0) // Won't be able to update regen if there's no AI
                             {
-                                int newRegen;
-                                if (result.Stats.regen.UsesOverride)
-                                {
-                                    newRegen = result.Stats.regen.overrideValue;
-                                }
-                                else
-                                {
-                                    newRegen = (int)((npc.lifeRegen + result.Stats.regen.baseValue) * result.Stats.regen.multValue + result.Stats.regen.flatValue + (npc.lifeMax * result.Stats.regenLifeMaxPercent));
-                                }
+                                int newRegen = result.Stats.GetRegenValue(npc.lifeRegen, npc.lifeMax);
 
                                 if (newRegen != npc.lifeRegen)
                                 {
@@ -433,7 +473,7 @@ namespace SimpleNPCStats2.Common
                 {
                     tag[nameof(Stats)] = value;
 
-                    float scale = value.scale.GetValue(npc.scale);
+                    float scale = value.GetScaleValue();
                     if (scale != 1)
                     {
                         float newWidth = (int)(npc.width * scale);
@@ -465,25 +505,6 @@ namespace SimpleNPCStats2.Common
             return true;
         }
 
-        public override void PostAI(NPC npc)
-        {
-
-        }
-
-        //public override void EditSpawnPool(IDictionary<int, float> pool, NPCSpawnInfo spawnInfo)
-        //{
-        //    foreach (var key in pool.Keys)
-        //    {
-        //        Main.NewText(key);
-        //        if (ConfigSystem.SpawnRateModifiers.TryGetValue(key, out var value))
-        //        {
-        //            Main.NewText(pool[key]);
-        //            pool[key] *= value;
-        //            Main.NewText(pool[key]);
-        //        }
-        //    }
-        //}
-
         public override void ModifyHoverBoundingBox(NPC npc, ref Rectangle boundingBox)
         {
             if (Enabled)
@@ -510,46 +531,26 @@ namespace SimpleNPCStats2.Common
             return 1f;
         }
 
-        public StatInfo OldStatInfo { get; private set; }
-        public StatInfo NewStatInfo { get; private set; }
+        public StatInfo oldStatInfo;
+        public StatInfo newStatInfo;
         public struct StatInfo
         {
-            public int defDamage;
             public int lifeMax;
+
+            public int defDamage;
 
             public static StatInfo Create(NPC npc)
             {
                 return new StatInfo()
                 {
-                    defDamage = npc.defDamage,
-                    lifeMax = npc.lifeMax
+                    lifeMax = npc.lifeMax,
+                    defDamage = npc.defDamage
                 };
             }
 
             public override string ToString()
             {
-                return string.Join(',', defDamage, lifeMax);
-            }
-        }
-
-
-        public override void PostDraw(NPC npc, SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
-        {
-            return;
-
-            object[] draw = [
-                OldStatInfo,
-                NewStatInfo,
-                npc.damage,
-                NewStatInfo.defDamage / (float)OldStatInfo.defDamage
-                ];
-
-            for (int i = 0; i < draw.Length; i++)
-            {
-                string text = draw[i].ToString();
-                float yOff = i * 20;
-
-                Utils.DrawBorderString(spriteBatch, text, npc.Center + new Vector2(0, npc.height / 2 + 50 + yOff) - Main.screenPosition, Color.White, 1, 0.5f, 0.5f);
+                return string.Join(',', lifeMax, defDamage);
             }
         }
     }

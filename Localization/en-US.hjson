@@ -67,7 +67,7 @@ Mods: {
 		StatAISpeed: "[i:1344] AI Speed [i:1344]"
 		StatGravity: "[i:1131] Gravity [i:1131]"
 		StatRegen: "[i:49] Life Regeneration [i:49]"
-		StatKnockback: "[i:3258] Knockback Resist [i:3258]"
+		StatKnockback: "[i:3258] Knockback Taken [i:3258]"
 		StatSpawnRate: "[i:300] Spawn Chance [i:300]"
 		StatTitle: Stat modifications
 		StatTutorial:
@@ -178,6 +178,126 @@ Mods: {
 
 				spawnRateMultiplier: {
 					Label: spawn Rate Multiplier
+					Tooltip: ""
+				}
+
+				lifeBase: {
+					Label: life Base
+					Tooltip: ""
+				}
+
+				lifeMultiplier: {
+					Label: life Multiplier
+					Tooltip: ""
+				}
+
+				lifeFlat: {
+					Label: life Flat
+					Tooltip: ""
+				}
+
+				lifeOverride: {
+					Label: life Override
+					Tooltip: ""
+				}
+
+				damageBase: {
+					Label: damage Base
+					Tooltip: ""
+				}
+
+				damageMultiplier: {
+					Label: damage Multiplier
+					Tooltip: ""
+				}
+
+				damageFlat: {
+					Label: damage Flat
+					Tooltip: ""
+				}
+
+				damageOverride: {
+					Label: damage Override
+					Tooltip: ""
+				}
+
+				defenseBase: {
+					Label: defense Base
+					Tooltip: ""
+				}
+
+				defenseMultiplier: {
+					Label: defense Multiplier
+					Tooltip: ""
+				}
+
+				defenseFlat: {
+					Label: defense Flat
+					Tooltip: ""
+				}
+
+				defenseOverride: {
+					Label: defense Override
+					Tooltip: ""
+				}
+
+				scaleMultiplier: {
+					Label: scale Multiplier
+					Tooltip: ""
+				}
+
+				movementMultiplier: {
+					Label: movement Multiplier
+					Tooltip: ""
+				}
+
+				aiSpeedMultiplier: {
+					Label: ai Speed Multiplier
+					Tooltip: ""
+				}
+
+				gravityMultiplier: {
+					Label: gravity Multiplier
+					Tooltip: ""
+				}
+
+				regenBase: {
+					Label: regen Base
+					Tooltip: ""
+				}
+
+				regenMultiplier: {
+					Label: regen Multiplier
+					Tooltip: ""
+				}
+
+				regenFlat: {
+					Label: regen Flat
+					Tooltip: ""
+				}
+
+				regenOverride: {
+					Label: regen Override
+					Tooltip: ""
+				}
+
+				knockbackBase: {
+					Label: knockback Base
+					Tooltip: ""
+				}
+
+				knockbackMultiplier: {
+					Label: knockback Multiplier
+					Tooltip: ""
+				}
+
+				knockbackFlat: {
+					Label: knockback Flat
+					Tooltip: ""
+				}
+
+				knockbackOverride: {
+					Label: knockback Override
 					Tooltip: ""
 				}
 			}

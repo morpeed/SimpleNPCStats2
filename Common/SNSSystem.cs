@@ -58,7 +58,7 @@ namespace SimpleNPCStats2.Common
                     {
                         if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result) && result.Enabled)
                         {
-                            return result.OldStatInfo.lifeMax;
+                            return result.oldStatInfo.lifeMax;
                         }
                         else
                         {

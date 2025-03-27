@@ -20,7 +20,7 @@ namespace SimpleNPCStats2
     {
         public enum MessageType : byte
         {
-            SetupCustomizedNPC
+            RequestManualSyncCustomizedNPCs
         }
         public override void HandlePacket(BinaryReader reader, int whoAmI)
         {
@@ -28,74 +28,40 @@ namespace SimpleNPCStats2
 
             switch (messageType)
             {
-                case MessageType.SetupCustomizedNPC:
+                case MessageType.RequestManualSyncCustomizedNPCs:
 
                     if (Main.netMode == NetmodeID.Server)
                     {
-                        ModPacket packet = GetPacket();
-                        packet.Write((byte)MessageType.SetupCustomizedNPC);
-
-                        var netIds = new List<byte>();
                         foreach (var npc in Main.ActiveNPCs)
                         {
-                            if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result) && result.TypeNetID < 0)
+                            if (npc.TryGetGlobalNPC<CustomizedNPC>(out var customizedNpc) && customizedNpc.Enabled)
                             {
-                                netIds.Add((byte)npc.whoAmI);
-                                netIds.Add((byte)-result.TypeNetID);
+                                var packet = GetPacket();
+                                packet.Write((byte)MessageType.RequestManualSyncCustomizedNPCs);
+                                packet.Write((byte)npc.whoAmI);
+                                customizedNpc.Write(npc, packet);
+                                packet.Send(whoAmI);
                             }
                         }
-
-                        packet.Write((byte)netIds.Count);
-                        foreach (var netId in netIds)
-                        {
-                            packet.Write(netId);
-                        }
-
-
-                        packet.Send(whoAmI);
                     }
                     else
                     {
-                        byte arrayLength = reader.ReadByte();
-                        Dictionary<int, int> netIds = new Dictionary<int, int>();
-                        for (int i = 0; i < arrayLength / 2; i++)
+                        var npc2 = Main.npc[reader.ReadByte()];
+                        if (npc2.TryGetGlobalNPC<CustomizedNPC>(out var customizedNpc2))
                         {
-                            int npcWhoAmI = reader.ReadByte();
-                            int netId = -reader.ReadByte();
-
-                            netIds[npcWhoAmI] = netId;
+                            customizedNpc2.Read(npc2, reader);
                         }
-
-                        foreach (var npc in Main.ActiveNPCs)
+                        else
                         {
-                            if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result))
-                            {
-                                int type;
-                                if (netIds.TryGetValue(npc.whoAmI, out var value))
-                                {
-                                    type = value;
-                                }
-                                else
-                                {
-                                    type = npc.type;
-                                }
-
-                                if (ConfigSystem.StaticNPCData.TryGetValue(type, out var value2))
-                                {
-                                    result.Setup(npc, value2);
-                                }
-                                else
-                                {
-                                    result.Setup(npc);
-                                }
-                            }
+                            var _ = new CustomizedNPC();
+                            _.Read(new NPC(), reader);
                         }
                     }
 
                     break;
 
                 default:
-                    Logger.WarnFormat("ExampleMod: Unknown Message type: {0}", messageType);
+                    Logger.WarnFormat("SimpleNPCStats2: Unknown Message type: {0}", messageType);
                     break;
             }
         }
@@ -108,7 +74,7 @@ namespace SimpleNPCStats2
             if (Main.netMode == NetmodeID.MultiplayerClient)
             {
                 ModPacket packet = Mod.GetPacket();
-                packet.Write((byte)SimpleNPCStats2.MessageType.SetupCustomizedNPC);
+                packet.Write((byte)SimpleNPCStats2.MessageType.RequestManualSyncCustomizedNPCs);
                 packet.Send();
             }
         }

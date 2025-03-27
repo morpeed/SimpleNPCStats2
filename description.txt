@@ -15,7 +15,7 @@ Includes modifying:
 [h1]IMPORTANT![/h1]
 This mod is experimental and is by no means perfect, generally should work fine but be weary of potential bugs and mod conflicts.
 
-Changes to config only take affect on newly spawned NPCs (or upon world reload).
+Changes to config only take affect on newly spawned NPCs.
 
 [h1]F.A.Q.[/h1]
 [h3]How to use?[/h3]
