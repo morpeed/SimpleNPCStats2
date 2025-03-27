@@ -129,7 +129,7 @@ namespace SimpleNPCStats2.Common
             MovementSpeed = Stats.GetMovementValue();
             _useMovementSpeed = !NoMovementSpeedNPCIDs.Contains(TypeNetID);
 
-            npc.lifeMax = Math.Max(0, Stats.GetLifeValue(npc.lifeMax));
+            npc.lifeMax = Math.Max(1, Stats.GetLifeValue(npc.lifeMax));
             npc.life = npc.lifeMax;
 
             npc.defDamage = Math.Max(0, Stats.GetDamageValue(npc.defDamage));

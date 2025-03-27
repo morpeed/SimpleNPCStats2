@@ -1,10 +1,4 @@
-2.2.6
-
-Features
-- Knockback can now be decreased with base and flat
+2.2.7
 
 Fixes
-- Fixed issues related to NPCs not syncing properly on the client when joining a server
-
-Misc
-- Reworded "Knockback Resist" to "Knockback Taken" to make it clear that increasing the value increases the knockback
+- Modifying HP now has a lower limit of 1 instead of 0 which would cause the enemy to despawn instantly
