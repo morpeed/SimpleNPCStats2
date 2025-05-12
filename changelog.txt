@@ -1,4 +1,5 @@
-2.2.7
+2.2.8
 
 Fixes
-- Modifying HP now has a lower limit of 1 instead of 0 which would cause the enemy to despawn instantly
+- Wall of Flesh's wall will now visually scale relative to the mouth
+- Wall of Flesh and its attached Hungries now have a minimum scale of 0.05 to prevent crashing

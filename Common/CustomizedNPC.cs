@@ -52,7 +52,10 @@ namespace SimpleNPCStats2.Common
             { NPCID.GolemFistLeft, (null, 1.5f) },
             { NPCID.GolemFistRight, (null, 1.5f) },
             { NPCID.GolemHead, (null, 1.5f) },
-            { NPCID.GolemHeadFree, (null, 1.5f) } // Not needed technically, but for consistency
+            { NPCID.GolemHeadFree, (null, 1.5f) }, // Not needed technically, but for consistency
+            { NPCID.WallofFlesh, (0.05f, null) },
+            { NPCID.WallofFleshEye, (0.05f, null) },
+            { NPCID.TheHungry, (0.05f, null) } // Not including detached because, whagever
         };
 
         /// Disables movement speed modifier (value will still be saved, but not in use, so will be transferred to projectiles)

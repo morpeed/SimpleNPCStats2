@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using SimpleNPCStats2.Common.Config;
@@ -9,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Terraria;
+using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
@@ -22,6 +24,64 @@ namespace SimpleNPCStats2.Common
         {
             On_NPC.SetDefaultsFromNetId += CustomizedNPC.On_NPC_SetDefaultsFromNetId;
             On_NPC.SetDefaults += CustomizedNPC.On_NPC_SetDefaults;
+            On_Main.DrawWOFBody += On_Main_DrawWOFBody_ScaleFix;
+        }
+
+        // Really am not bothered to make this an IL edit, will leave as is until somebody finds a mod that breaks this and complains about it
+        private void On_Main_DrawWOFBody_ScaleFix(On_Main.orig_DrawWOFBody orig)
+        {
+            if (Main.npc[Main.wofNPCIndex].TryGetGlobalNPC<CustomizedNPC>(out var result) && !result.Enabled)
+            {
+                orig();
+                return;
+            }
+
+            float wofScale = result.Scale / 1.2f;
+
+            int num = TextureAssets.Wof.Height() / 3;
+            float num2 = Main.wofDrawAreaTop;
+            float num3 = Main.wofDrawAreaBottom;
+            num3 = Main.screenPosition.Y + (float)Main.screenHeight;
+            float num4 = (int)((num2 - Main.screenPosition.Y) / (float)num) + 1;
+            if (num4 > 12f)
+            {
+                return;
+            }
+            float num5 = num4 * (float)num;
+            if (num5 > 0f)
+            {
+                num2 -= num5;
+            }
+            float num6 = Main.npc[Main.wofNPCIndex].position.X;
+            if (Main.npc[Main.wofNPCIndex].direction > 0)
+            {
+                num6 -= 80f * wofScale;
+            }
+            SpriteEffects effects = SpriteEffects.None;
+            if (Main.npc[Main.wofNPCIndex].spriteDirection == 1)
+            {
+                effects = SpriteEffects.FlipHorizontally;
+            }
+            int num7 = Main.wofDrawFrameIndex / 6 * num;
+            if (!Main.gamePaused && ++Main.wofDrawFrameIndex >= 18)
+            {
+                Main.wofDrawFrameIndex = 0;
+            }
+            float num8 = num3 - num2;
+            for (float i = (int)num2; (float)i < num3; i += num * wofScale)
+            {
+                num8 = num3 - (float)i;
+                if (num8 > (float)num)
+                {
+                    num8 = num;
+                }
+                for (int j = 0; (float)j < num8; j += 16)
+                {
+                    int x = (int)(num6 + (float)(TextureAssets.Wof.Width() / 2)) / 16;
+                    int y = (int)(i + j) / 16;
+                    Main.spriteBatch.Draw(TextureAssets.Wof.Value, new Vector2(num6 - Main.screenPosition.X, (float)(i + j * wofScale) - Main.screenPosition.Y), new Rectangle(0, num7 + j, TextureAssets.Wof.Width(), 16), Lighting.GetColor(x, y), 0f, default(Vector2), wofScale, effects, 0f);
+                }
+            }
         }
 
         public override void Load()
