@@ -181,7 +181,7 @@ namespace SimpleNPCStats2.Common
                     cursor.EmitLdarg(0);
                     cursor.EmitDelegate((Projectile projectile) =>
                     {
-                        if (projectile.TryGetGlobalProjectile<CustomizedNPCProjectile>(out var result) && result.Enabled)
+                        if (projectile.TryGetGlobalProjectile<CustomizedNPCProjectile>(out var result) && result.Enabled && result.UseMovementSpeed)
                         {
                             return result.MovementSpeed;
                         }
