@@ -76,14 +76,52 @@ namespace SimpleNPCStats2.Common
             _fromNetID = true;
             orig(self, id, spawnparams);
             _fromNetID = false;
-            if (!Main.gameMenu)
+            
+            try
             {
-                if (self.TryGetGlobalNPC<CustomizedNPC>(out var result))
+                if (!Main.gameMenu)
                 {
-                    if (!result._setupFromLoadData)
+                    if (self.TryGetGlobalNPC<CustomizedNPC>(out var result))
                     {
-                        result.TypeNetID = id;
-                        result.Setup(self);
+                        if (!result._setupFromLoadData)
+                        {
+                            result.TypeNetID = id;
+                            result.Setup(self);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                List<string> check = new();
+                check.Add("On_NPC_SetDefaultsFromNetId");
+                check.Add((self is null).ToString());
+                if (self != null)
+                {
+                    check.Add(self.active.ToString());
+                    check.Add(self.whoAmI.ToString());
+                    check.Add(self.type.ToString());
+                    check.Add((self.ModNPC is null).ToString());
+                    if (self.ModNPC != null)
+                    {
+                        check.Add(self.ModNPC.FullName);
+                    }
+                }
+                check.Add("/////");
+                check.Add(Main.gameMenu.ToString());
+                check.Add(id.ToString());
+                check.Add(_fromNetID.ToString());
+                SimpleNPCStats2.Instance.Logger.Error(string.Join(", ", check), ex);
+
+                if (self != null)
+                {
+                    try
+                    {
+                        self.TryGetGlobalNPC<CustomizedNPC>(out var _);
+                    }
+                    catch (Exception ex2)
+                    {
+                        SimpleNPCStats2.Instance.Logger.Error(ex2.Message);
                     }
                 }
             }
@@ -91,15 +129,52 @@ namespace SimpleNPCStats2.Common
         public static void On_NPC_SetDefaults(On_NPC.orig_SetDefaults orig, NPC self, int Type, NPCSpawnParams spawnparams)
         {
             orig(self, Type, spawnparams);
-            // Method returns early if Type < 0
-            if (!Main.gameMenu && Type > 0 && !_fromNetID)
+            try
             {
-                if (self.TryGetGlobalNPC<CustomizedNPC>(out var result))
+                // Method returns early if Type < 0
+                if (!Main.gameMenu && Type > 0 && !_fromNetID)
                 {
-                    if (!result._setupFromLoadData)
+                    if (self.TryGetGlobalNPC<CustomizedNPC>(out var result))
                     {
-                        result.TypeNetID = self.type;
-                        result.Setup(self);
+                        if (!result._setupFromLoadData)
+                        {
+                            result.TypeNetID = self.type;
+                            result.Setup(self);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                List<string> check = new();
+                check.Add("On_NPC_SetDefaults");
+                check.Add((self is null).ToString());
+                if (self != null)
+                {
+                    check.Add(self.active.ToString());
+                    check.Add(self.whoAmI.ToString());
+                    check.Add(self.type.ToString());
+                    check.Add((self.ModNPC is null).ToString());
+                    if (self.ModNPC != null)
+                    {
+                        check.Add(self.ModNPC.FullName);
+                    }
+                }
+                check.Add("/////");
+                check.Add(Main.gameMenu.ToString());
+                check.Add(Type.ToString());
+                check.Add(_fromNetID.ToString());
+                SimpleNPCStats2.Instance.Logger.Error(string.Join(", ", check), ex);
+
+                if (self != null)
+                {
+                    try
+                    {
+                        self.TryGetGlobalNPC<CustomizedNPC>(out var _);
+                    }
+                    catch (Exception ex2)
+                    {
+                        SimpleNPCStats2.Instance.Logger.Error(ex2.Message);
                     }
                 }
             }
@@ -338,22 +413,56 @@ namespace SimpleNPCStats2.Common
                     cursor.EmitLdloca(0); // num value / regen visual number                    
                     cursor.EmitDelegate((ref NPC npc, ref int regenNumber) =>
                     {
-                        if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result))
+                        try
                         {
-                            if (result.Enabled && result.AISpeed > 0) // Won't be able to update regen if there's no AI
+                            if (npc.TryGetGlobalNPC<CustomizedNPC>(out var result))
                             {
-                                int newRegen = result.Stats.GetRegenValue(npc.lifeRegen, npc.lifeMax);
-
-                                if (newRegen != npc.lifeRegen)
+                                if (result.Enabled && result.AISpeed > 0) // Won't be able to update regen if there's no AI
                                 {
-                                    npc.lifeRegen = newRegen * 2;
-                                    regenNumber = Math.Abs(newRegen / 2);
-                                    if (regenNumber == 0)
+                                    int newRegen = result.Stats.GetRegenValue(npc.lifeRegen, npc.lifeMax);
+
+                                    if (newRegen != npc.lifeRegen)
                                     {
-                                        regenNumber = 1;
+                                        npc.lifeRegen = newRegen * 2;
+                                        regenNumber = Math.Abs(newRegen / 2);
+                                        if (regenNumber == 0)
+                                        {
+                                            regenNumber = 1;
+                                        }
+                                        _IL_LifeRegenModified = true;
+                                        return;
                                     }
-                                    _IL_LifeRegenModified = true;
-                                    return;
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            List<string> check = new();
+                            check.Add("IL_NPC_UpdateNPC_BuffApplyDOTs");
+                            check.Add((npc is null).ToString());
+                            if (npc != null)
+                            {
+                                check.Add(npc.active.ToString());
+                                check.Add(npc.whoAmI.ToString());
+                                check.Add(npc.type.ToString());
+                                check.Add((npc.ModNPC is null).ToString());
+                                if (npc.ModNPC != null)
+                                {
+                                    check.Add(npc.ModNPC.FullName);
+                                }
+                            }
+                            check.Add("/////");
+                            SimpleNPCStats2.Instance.Logger.Error(string.Join(", ", check), ex);
+
+                            if (npc != null)
+                            {
+                                try
+                                {
+                                    npc.TryGetGlobalNPC<CustomizedNPC>(out var _);
+                                }
+                                catch (Exception ex2)
+                                {
+                                    SimpleNPCStats2.Instance.Logger.Error(ex2.Message);
                                 }
                             }
                         }

@@ -1,3 +1,5 @@
-displayName = Simple NPC Customizer (Stats, Size, Speed & More!)
+displayName = Simple NPC Customizer
 author = morpe
-version = 2.2.9
+version = 2.2.10
+includeSource = true
+homepage = https://github.com/morpeed/SimpleNPCStats2

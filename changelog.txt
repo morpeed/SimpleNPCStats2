@@ -1,4 +1,8 @@
-2.2.9
+2.2.10
 
-Fixes
-- Fixed Projectile - Use Movement Speed not disabling the effect when turned off
+Misc
+- Added some error logs for debugging purposes related to the mod erroring/crashing after some time in order to help identify the issue (not a fix)
+- Removed "(Stats, Size, Speed & More!)" from the mod name
+- Removed steam workshop formatting from in game description
+- Added github link to in game description
+- Source code will now be avaliable when decompiling the mod (or just go to github)
